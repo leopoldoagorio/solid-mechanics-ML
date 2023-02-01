@@ -1,4 +1,4 @@
 #!/bin/bash
-cd ~/Documents/mamaML/uniaxialExtension
-#octave uniaxialExtension.m
-octave ../echotest.m "$@"
+cd uniaxialCompression
+#octave uniaxialCompression.m
+octave uniaxialCompression.m "$@"
