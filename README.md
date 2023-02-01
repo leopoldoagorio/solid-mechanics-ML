@@ -10,5 +10,7 @@ Wensdays 11:00 am at: [![zoom](https://img.shields.io/badge/zoom-meetings-red)](
 
 - We discussed different methods and algorithms that can be used to simulate structures.
 - Leo and Mauricio present some minor scripting results on uniaxial compression example.
-- Bruno shared some reference denoting a skepticism on the ability of ML models to generalize well. 
+- Bruno shared a [reference](https://doi.org/10.1016/j.engappai.2018.01.006) denoting a skepticism on the ability of ML models to generalize well.
+- Bruno shared a [reference](https://doi.org/10.1016/j.advengsoft.2005.03.022) of structural optimization using ML model instead of FEA analyses.
+- Bruno shared a [reference](https://doi.org/10.1080/17415970600573411) of structural parameter identification using ML model instead of FEA analyses.
 - We decided to generate 1000 samples changing E, Lx, p and to predict the value of $u_x$ at $x$ = [ $L_x$ , $0$ , $0$ ]  
