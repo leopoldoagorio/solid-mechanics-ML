@@ -54,7 +54,7 @@ function [matUs,loadFactorsMat,analyticVals] = uniaxialCompression(Lx,Ly,Lz,E,nu
   %md the first BC introduced is a load, then the coordinate system, loadfactor time function and base load vector are defined
   boundaryConds(1).loadsCoordSys = 'global';
   boundaryConds(1).loadsTimeFact = @(t) p*t ;
-  boundaryConds(1).loadsBaseVals = [ 1 0 0 0 0 0 ] ;
+  boundaryConds(1).loadsBaseVals = [ -1 0 0 0 0 0 ] ;
   %md the other BCs have imposed displacements
   boundaryConds(2).imposDispDofs = [1] ;
   boundaryConds(2).imposDispVals =  0  ;
@@ -107,6 +107,7 @@ function [matUs,loadFactorsMat,analyticVals] = uniaxialCompression(Lx,Ly,Lz,E,nu
                     [ 1 2 0 0    4 6 5 8 ]; ... % tetrahedron
                     [ 1 2 0 0    4 7 6 8 ]  ... % tetrahedron
                   } ;
+
   %md
   %md### Analysis parameters
   %md
@@ -125,6 +126,7 @@ function [matUs,loadFactorsMat,analyticVals] = uniaxialCompression(Lx,Ly,Lz,E,nu
   %md
 
 
+
   alphas         = (Lx + matUs(6*6+1,:)) / Lx ;
   betas          = (Ly + matUs(6*6+3,:)) / Ly ;
 
@@ -136,16 +138,32 @@ end
 
 [matUs,loadFactorsMat, analyticVals] = uniaxialCompression(Lx,Ly,Lz,E,nu,p)
 
-controlDispsValsCase = matUs(6*6+1,:) ;  ;
 
+controlDispsValsCase = matUs(6*6+1,:) ;  
+%disp(matUs)
+matUslast = matUs(:,end)
+loadedfacenodeindexes = [ 5 6 7 8 ] ;
+loadedfaceDoFs = nodes2dofs( loadedfacenodeindexes, 6 ) ;
+loadedfaceDoFsUs = loadedfaceDoFs(1:2:end);
+Usloaded=matUslast(loadedfaceDoFsUs);
+Ux = mean(Usloaded(1:3:end));
+Uy = (Usloaded(8)+Usloaded(11))/2;
+Uz = (Usloaded(6)+Usloaded(9))/2;
+%return Ux, Uy, Uz;
+%dlmwrite('output.txt', [Ux, Uy, Uz]);
+fid = fopen('output.txt', 'w');
+fprintf(fid, '%f\n', Ux);
+fprintf(fid, '%f\n', Uy);
+fprintf(fid, '%f\n', Uz);
+fclose(fid);
 %md## Plot
 %mdThe numerical and analytic solutions are plotted.
-lw = 2.0 ; ms = 11 ; plotfontsize = 18 ;
-figure, hold on, grid on
-plot( controlDispsValsCase, loadFactorsMat, 'r-x' , 'linewidth', lw,'markersize',ms )
-plot( controlDispsValsCase, analyticVals,  'g-s' , 'linewidth', lw,'markersize',ms )
-labx = xlabel('Displacement');   laby = ylabel('\lambda(t)') ;
-legend( 'Numeric', 'Analytic' , 'location', 'SouthEast' )
-set(gca, 'linewidth', 1.0, 'fontsize', plotfontsize )
-set(labx, 'FontSize', plotfontsize); set(laby, 'FontSize', plotfontsize) ;
-print("./output/validation.png")
+% lw = 2.0 ; ms = 11 ; plotfontsize = 18 ;
+% figure, hold on, grid on
+% plot( controlDispsValsCase, loadFactorsMat, 'r-x' , 'linewidth', lw,'markersize',ms )
+% plot( controlDispsValsCase, analyticVals,  'g-s' , 'linewidth', lw,'markersize',ms )
+% labx = xlabel('Displacement');   laby = ylabel('\lambda(t)') ;
+% legend( 'Numeric', 'Analytic' , 'location', 'SouthEast' )
+% set(gca, 'linewidth', 1.0, 'fontsize', plotfontsize )
+% set(labx, 'FontSize', plotfontsize); set(laby, 'FontSize', plotfontsize) ;
+% print("./output/validation.png")
