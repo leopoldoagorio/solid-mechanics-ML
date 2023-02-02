@@ -59,3 +59,7 @@ for Lx in "${Lx_values[@]}"; do
     done
   done
 done
+
+# Remove the temporary files
+rm cliOutput.txt > /dev/null 2>&1
+rm output.txt > /dev/null 2>&1
