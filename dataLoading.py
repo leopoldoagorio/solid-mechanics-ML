@@ -1,3 +1,8 @@
+__author__ = "Leopoldo Agorio and Mauricio Vanzulli"
+__email__ = "lagorio@fing.edu.uy  mvanzulli@fing.edy.uy"
+__status__ = "Development"
+__date__ = "02/23"
+
 """Loading the csv with torch's data loader and using it for batch training
 remember the csv structure was: echo "$Lx,$Ly,$Lz, $E, $nu, $p,$Ux,$Uy,$Uz" >> "$filename"
 where Lx, Ly, Lz are the block's length, E and nu are material parameter,  p is the input pressure
