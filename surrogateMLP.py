@@ -1,3 +1,7 @@
+
+#!/usr/bin/env python3
+# -*- coding: UTF-8 -*-
+
 __author__ = "Leopoldo Agorio and Mauricio Vanzulli"
 __email__ = "lagorio@fing.edu.uy  mvanzulli@fing.edy.uy"
 __status__ = "Development"
@@ -7,17 +11,11 @@ __date__ = "02/23"
 remember the csv structure was: echo "$Lx,$Ly,$Lz, $E, $nu, $p,$Ux,$Uy,$Uz" >> "$filename"
 where Lx, Ly, Lz are the block's length, E and nu are material parameter,  p is the input pressure
  and Ux, Uy, Uz are the output compression """
-import torch.nn as nn
+
+ 
 import torch
 from torch.utils.data import Dataset, DataLoader
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import torch.nn.functional as F
-from torch.autograd import Variable
-import torch.optim as optim
-import time
-
 # Loading the data
 #echo "$Lx,$Ly,$Lz,$E,$nu,$p,$Ux,$Uy,$Uz" >> "$filename"
 class uniCompDataset(Dataset):
