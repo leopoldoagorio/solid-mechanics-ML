@@ -77,6 +77,7 @@ class MLP(torch.nn.Module):
 
         for epoch in range(num_epochs):
             for batch_idx, data in enumerate(train_loader):
+                #print(batch_idx) 0....18
                 data = data.to(self.device)
                 optimizer.zero_grad()
                 predicted = self.Net(data[:, :3]) # Lx,E,p
@@ -84,11 +85,8 @@ class MLP(torch.nn.Module):
                 loss = criterion(predicted, ground_truths)
                 loss.backward()
                 optimizer.step()
-                if batch_idx % 100 == 0:
-                    print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                        epoch, batch_idx * len(data), len(train_loader.dataset),
-                        100. * batch_idx / len(train_loader), loss.item()))
-            
+                # print statistics when batch_idx is 18 (only 18 batches in the dataset)
+            print(f"Epoch: {epoch}, Loss: {loss.item()}")  
             self.loss.append(loss.item())
 
 
@@ -108,7 +106,7 @@ class MLP(torch.nn.Module):
 # Main
 if __name__ == '__main__':
     # Loading the data
-    train_dataset = uniCompDataset('results_2023-02-08_11-28-32.csv')
+    train_dataset = uniCompDataset('data.csv')
     train_loader = DataLoader(train_dataset, batch_size=1000, shuffle=True)
 
     # Defining the model
