@@ -14,3 +14,9 @@ Wensdays 11:00 am at: [![zoom](https://img.shields.io/badge/zoom-meetings-red)](
 - Bruno shared a [reference](https://doi.org/10.1016/j.advengsoft.2005.03.022) of structural optimization using ML model instead of FEA analyses.
 - Bruno shared a [reference](https://doi.org/10.1080/17415970600573411) of structural parameter identification using ML model instead of FEA analyses.
 - We decided to generate 1000 samples changing E, Lx, p and to predict the value of $u_x$ at $x$ = [ $L_x$ , $0$ , $0$ ]  
+
+### 8.02.22
+- Data visualization seems to not be useful since we have an analytic solution for the displacements
+- Mauricio shares [this reference ](https://www.sciencedirect.com/science/article/pii/S2666990022000040)about surrogate modes to predict breast displacements field. 
+-  Leo shows showed scripts to generate .csv results. Features [ $L_x$ ,  $E$ ,  $p$ ] targets  [ $u_x$ , $u_y$ , $u_z$ ]
+- Bruno contributes to the analytic solution of the uni-axial compression example.
