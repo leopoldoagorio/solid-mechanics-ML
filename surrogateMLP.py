@@ -35,7 +35,6 @@ class MLP(torch.nn.Module):
         self.n_neurons_per_layer = n_neurons_per_layer
         self.activation = torch.nn.ReLU()
 
-
         # create an empty sequential model
         self.Net = torch.nn.Sequential()
 
