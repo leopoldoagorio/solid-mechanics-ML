@@ -89,9 +89,6 @@ class MLP(torch.nn.Module):
             print(f"Epoch: {epoch}, Loss: {loss.item()}")  
             self.loss.append(loss.item())
 
-        re
-
-
 # # Testing the model
 # def test(model, test_loader, criterion):
 #     model.eval()
