@@ -1,11 +1,9 @@
-
-#!/usr/bin/env python3
-# -*- coding: UTF-8 -*-
-
+"""
 __author__ = "Leopoldo Agorio and Mauricio Vanzulli"
 __email__ = "lagorio@fing.edu.uy  mvanzulli@fing.edy.uy"
 __status__ = "Development"
 __date__ = "02/23"
+"""
 
 """Loading the csv with torch's data loader and using it for batch training
 remember the csv structure was: echo "$Lx,$Ly,$Lz, $E, $nu, $p,$Ux,$Uy,$Uz" >> "$filename"
@@ -35,7 +33,8 @@ class MLP(torch.nn.Module):
         self.depth = depth
         self.loss = []
         self.n_neurons_per_layer = n_neurons_per_layer
-        
+        self.activation = torch.nn.ReLU()
+
         # create an empty sequential model
         self.Net = torch.nn.Sequential()
 
@@ -43,14 +42,15 @@ class MLP(torch.nn.Module):
         self.n_features = 3
         self.n_labels = 3
         self.Net.add_module("input_layer", torch.nn.Linear(self.n_features, self.n_neurons_per_layer))
-        
+        self.Net.add_module("hidden_activation_num_{}".format(0), self.activation)
+
         # Add hidden layers
         for n_hidden_layer in range(self.depth):
             self.Net.add_module(
                 "hidden_layer_num_{}".format(n_hidden_layer + 1),
                 torch.nn.Linear(self.n_neurons_per_layer, self.n_neurons_per_layer)
             )
-            self.Net.add_module("hidden_activation_num_{}".format(n_hidden_layer + 1 ), torch.nn.ReLU())
+            self.Net.add_module("hidden_activation_num_{}".format(n_hidden_layer + 1), self.activation)
 
         # Add output layer
         self.Net.add_module("output_layer", torch.nn.Linear(self.n_neurons_per_layer, self.n_labels))
@@ -88,6 +88,8 @@ class MLP(torch.nn.Module):
                 # print statistics when batch_idx is 18 (only 18 batches in the dataset)
             print(f"Epoch: {epoch}, Loss: {loss.item()}")  
             self.loss.append(loss.item())
+
+        re
 
 
 # # Testing the model
