@@ -6,7 +6,7 @@ def computes_alpha_beta_residuals(variables, *args):
     
     bulk = E / (3*(1 - 2 * nu)) 
     mu = E / (2 * (1 + nu))
-    eqn_1 = mu * alpha - mu * 1 / alpha + bulk * beta**2 * (alpha* beta**2 -1) - p
+    eqn_1 = mu * alpha - mu * 1 / alpha + bulk * beta**2 * (alpha* beta**2 -1) - (- p) # compression is positive
     eqn_2 = beta * mu  - mu * 1 / beta + bulk * beta * (alpha**2 * beta**2 - alpha)  
     return [eqn_1,eqn_2]
 
@@ -28,7 +28,7 @@ def compute_analytic_solution(x, y, z, *data):
 # From main
 if __name__ == '__main__':
     E = 1.
-    pressure = -5.
+    pressure = 5.
     nu = .3
     Lx = 2 
     Ly = 1
