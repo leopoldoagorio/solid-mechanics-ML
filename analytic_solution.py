@@ -20,7 +20,7 @@ def compute_analytic_solution(x, y, z, *data):
     beta_0 = 0.05 
 
     alpha, beta = fsolve(computes_alpha_beta_residuals, [alpha_0, beta_0], args = data)
-    print("alpha is: %.2f, beta is: %.2f" % (alpha, beta))
+    #print("alpha is: %.2f, beta is: %.2f" % (alpha, beta))
     
     ux, uy, uz = computes_displacements(x, y, z, alpha, beta)
     return ux, uy, uz
