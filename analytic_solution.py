@@ -28,8 +28,8 @@ def compute_analytic_solution(x, y, z, *data):
 # From main
 if __name__ == '__main__':
 
-    sample267 = (1.9,1,1,1.3,.3,3.0,-1.443487,0.224480,0.224480)
-    Lx, Ly, Lz, E, nu, p, Ux_train, Uy_train, Uz_train = sample267
+    sample_8220 = (1.9,1,1,1.3,.3,3.0,-1.443487,0.224480,0.224480)
+    Lx, Ly, Lz, E, nu, p, Ux_train, Uy_train, Uz_train = sample_8220
 
     ux, uy, uz = compute_analytic_solution(Lx,Ly,Lz, E, nu, p)
     
