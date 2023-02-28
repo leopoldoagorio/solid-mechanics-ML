@@ -16,6 +16,10 @@ from torch.utils.data import Dataset, DataLoader, TensorDataset
 import pandas as pd
 from analytic_solution import compute_analytic_solution
 import numpy as np
+import matplotlib.pyplot as plt
+from tqdm import tqdm
+import torch.nn as nn
+
 # Loading the data
 #echo "$Lx,$Ly,$Lz,$E,$nu,$p,$Ux,$Uy,$Uz" >> "$filename"
 class uniCompDataset(Dataset):
@@ -29,84 +33,90 @@ class uniCompDataset(Dataset):
         return self.len
 
 # Creating the model
-class MLP(torch.nn.Module):
-    def __init__(self, depth = 5, n_neurons_per_layer=8):
-        super(MLP, self).__init__()
-        self.depth = depth
+class MLP(nn.Module):
+    def __init__(self, input_dim=3, output_dim=3, hidden_layers=[20, 10]):
+        super().__init__()
+        self.input_dim = input_dim
+        self.output_dim = output_dim
+        self.hidden_layers = hidden_layers
+
+        layers = []
+        prev_layer_size = input_dim
+        for layer_size in hidden_layers:
+            layers.append(nn.Linear(prev_layer_size, layer_size))
+            layers.append(nn.ReLU())
+            prev_layer_size = layer_size
+        layers.append(nn.Linear(prev_layer_size, output_dim))
+        self.layers = nn.Sequential(*layers)
+        self.optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
+        self.criterion = nn.MSELoss()
+
         self.loss = []
-        self.n_neurons_per_layer = n_neurons_per_layer
-        self.activation = torch.nn.ReLU()
+        self.loss_val = []
+        self.loss_analytic = []
+        self.test_loss = []
 
-        # create an empty sequential model
-        self.Net = torch.nn.Sequential()
+        if torch.cuda.is_available():
+            self.device = torch.device('cuda')
+        else:
+            self.device = torch.device('cpu')
 
-        # Add first layer 
-        self.n_features = 3
-        self.n_labels = 3
-        self.Net.add_module("input_layer", torch.nn.Linear(self.n_features, self.n_neurons_per_layer))
-        self.Net.add_module("hidden_activation_num_{}".format(0), self.activation)
-
-        # Add hidden layers
-        for n_hidden_layer in range(self.depth):
-            self.Net.add_module(
-                "hidden_layer_num_{}".format(n_hidden_layer + 1),
-                torch.nn.Linear(self.n_neurons_per_layer, self.n_neurons_per_layer)
-            )
-            self.Net.add_module("hidden_activation_num_{}".format(n_hidden_layer + 1), self.activation)
-
-        # Add output layer
-        self.Net.add_module("output_layer", torch.nn.Linear(self.n_neurons_per_layer, self.n_labels))
-        
-        # Initialize weights iterating over all the modules
-        for m in self.Net.modules():
-            if isinstance(m, torch.nn.Linear):
-                torch.nn.init.xavier_uniform_(m.weight)
-                torch.nn.init.zeros_(m.bias)
-
-        # Define training loop 
-        self.optimizer = torch.optim.Adam(self.Net.parameters(), lr=0.001)
-        self.criterion = torch.nn.MSELoss()
-
-        # Define device
-        # self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        self.device = "cpu"
-    
     def forward(self, x):
-        return self.Net(x)
+        return self.layers(x)
 
-    def train(self, train_loader, optimizer=None, criterion=None, num_epochs=2000):
+    def train(self, train_loader, val_loader, optimizer=None, criterion=None, num_epochs=2000, analytic=False):
         if optimizer is None:
             optimizer = self.optimizer
         if criterion is None:
             criterion = self.criterion
+        if(analytic):
+            test_data, test_labels = generate_test_dataset(Ly=1, Lz=1, nu=0.3)
+            test_dataset = TensorDataset(test_data, test_labels)
+            test_loader = DataLoader(test_dataset, batch_size=100, shuffle=True)
 
-        for epoch in range(num_epochs):
+        for epoch in tqdm(range(num_epochs)):
+            train_loss = 0.0
             for batch_idx, data in enumerate(train_loader):
-                #print(batch_idx) 0....18
                 data = data.to(self.device)
                 optimizer.zero_grad()
-                predicted = self.Net(data[:, :3]) # Lx,E,p
+                predicted = self(data[:, :3]) # Lx,E,p
                 ground_truths = data[:, :3] # Lx,E,p
                 loss = criterion(predicted, ground_truths)
                 loss.backward()
                 optimizer.step()
-                # print statistics when batch_idx is 18 (only 18 batches in the dataset)
-            print(f"Epoch: {epoch}, Loss: {loss.item()}")  
-            self.loss.append(loss.item())
+                train_loss += loss.item()
 
-# Testing the model
-def test_analytic(model, criterion):
-    Ly = 1
-    Lz = 1
-    nu = 0.3
-    
-    test_loss = 0
-    correct = 0
-    
-    # create test data
-    Lx_range = np.linspace(0.8, 3.2, 33)
-    Em_range = np.linspace(0.5, 4.5, 33)
-    pressure_range = -np.linspace(0.05, 3.2, 33)
+            train_loss /= len(train_loader)
+
+            val_loss = self.val(val_loader, criterion)
+            if(analytic==False):
+                tqdm.write(f"Epoch: {epoch}, Train Loss: {train_loss}, Val Loss: {val_loss}")
+
+            self.loss.append(train_loss)
+            self.loss_val.append(val_loss)
+
+            if(analytic):
+                self.loss_analytic.append(test_analytic(self, criterion,test_loader))
+                tqdm.write(f"Epoch: {epoch}, Train Loss: {train_loss}, Val Loss: {val_loss}, Analytic Loss: {self.loss_analytic[-1]}")
+
+    def val(self, val_loader, criterion):
+        #self.eval()
+        val_loss = 0.0
+        with torch.no_grad():
+            for data in val_loader:
+                data = data.to(self.device)
+                predicted = self(data[:, :3]) # Lx,E,p
+                ground_truths = data[:, :3] # Lx,E,p
+                loss = criterion(predicted, ground_truths)
+                val_loss += loss.item()
+        val_loss /= len(val_loader)
+        return val_loss
+
+# Generate ground truth dataset
+def generate_test_dataset(Ly, Lz, nu, nx=33, ny=33, nz=33):
+    Lx_range = np.linspace(0.8, 3.2, nx)
+    Em_range = np.linspace(0.5, 4.5, ny)
+    pressure_range = np.linspace(0.05, 3.2, nz)
     test_data = []
     test_labels = []
     for Lx in Lx_range:
@@ -117,15 +127,20 @@ def test_analytic(model, criterion):
                 test_labels.append([ux, uy, uz])
     test_data = torch.tensor(test_data, dtype=torch.float)
     test_labels = torch.tensor(test_labels, dtype=torch.float)
-    test_dataset = TensorDataset(test_data, test_labels)
-    test_loader = DataLoader(test_dataset, batch_size=100, shuffle=True)
+    return test_data, test_labels
+
+
+# Testing the model
+def test_analytic(model, criterion, test_loader):
+    test_loss = 0
     
     with torch.no_grad():
         for data, target in test_loader:
             output = model(data)
             test_loss += criterion(output, target).item()
+            
     test_loss /= len(test_loader.dataset)
-    print('Test set: Average loss: {:.4f}'.format(test_loss))
+    tqdm.write('Test set: Average loss: {:.4f}'.format(test_loss))
     
     return test_loss
 
@@ -133,44 +148,28 @@ def test_analytic(model, criterion):
 # Main
 if __name__ == '__main__':
     # Loading the data
-    train_dataset = uniCompDataset('data.csv')
-    train_loader = DataLoader(train_dataset, batch_size=1000, shuffle=True)
-    test_dataset = uniCompDataset('data.csv')
-    test_loader = DataLoader(test_dataset, batch_size=100, shuffle=True)
+    dataset = uniCompDataset('data.csv')
+
+    # Splitting the data into training and validation sets
+    train_size = int(0.8 * len(dataset))
+    val_size = len(dataset) - train_size
+    train_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, val_size])
+
+    # Creating data loaders
+    batch_size = 1000
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
     # Defining the model
     mlp = MLP()
-    mlp.train(train_loader, num_epochs=3) 
-    # Testing the model
-    # mlp.Net with a numpy array of size 3
-    Lx = 1
-    Ly = 1
-    Lz = 1
-    Em = 1
-    nu = 0.3
-    pressure = 1
-
-    mlp.Net(torch.tensor([Lx, Em, pressure], dtype=torch.float))
-    #compute analytic solution
-    ux, uy, uz = compute_analytic_solution(Lx,Ly,Lz, Em, nu, pressure)
-
-
-    # print and compare the results
-    print("Analytic solution: ", compute_analytic_solution(Lx,Ly,Lz, Em, nu, pressure))
-    print("MLP solution: ", mlp.Net(torch.tensor([Lx, Em, pressure], dtype=torch.float)))
-    # error
-    # [ux, uy, uz] to tensor
-    print("Error: ", torch.norm(mlp.Net(torch.tensor([Lx, Em, pressure], dtype=torch.float)) - torch.tensor([ux, uy, uz], dtype=torch.float)))
-    
-    # test the model
-    result = test_analytic(mlp, torch.nn.MSELoss())
-    print("Test result: ", result)
-
-    # train some more
-    morep = 10
-    mlp.train(train_loader, num_epochs=3)
-    result = test_analytic(mlp, torch.nn.MSELoss())
-    print("After {} epochs, test result: ".format(morep), result)
-
-
-    pass
+    mlp.train(train_loader, val_loader=val_loader, num_epochs=100, analytic = True) 
+    ## Plotting the loss
+    plt.style.use('seaborn')
+    plt.plot(mlp.loss, label='Training Loss', marker='o')
+    plt.plot(mlp.loss_val, label='Validation Loss', marker='s')
+    plt.plot(mlp.loss_analytic, label='Analytic Loss', marker='s')
+    plt.legend()
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Comparison of Training Loss, Validation Loss, and Analytic Loss')
+    plt.show()
