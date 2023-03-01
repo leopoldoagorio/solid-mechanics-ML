@@ -79,15 +79,14 @@ class MLP(nn.Module):
             for batch_idx, data in enumerate(train_loader):
                 data = data.to(self.device)
                 optimizer.zero_grad()
-                predicted = self(data[:, :3]) # Lx,E,p
-                ground_truths = data[:, :3] # Lx,E,p
+                predicted = self(data[:, [0,3,5]])# input is in data[:, 0,3,5] Lx,E,p
+                ground_truths = data[:, -3:] # ux,uy,uz
                 loss = criterion(predicted, ground_truths)
                 loss.backward()
                 optimizer.step()
                 train_loss += loss.item()
 
             train_loss /= len(train_loader)
-
             val_loss = self.val(val_loader, criterion)
             if(analytic==False):
                 tqdm.write(f"Epoch: {epoch}, Train Loss: {train_loss}, Val Loss: {val_loss}")
@@ -105,8 +104,8 @@ class MLP(nn.Module):
         with torch.no_grad():
             for data in val_loader:
                 data = data.to(self.device)
-                predicted = self(data[:, :3]) # Lx,E,p
-                ground_truths = data[:, :3] # Lx,E,p
+                predicted = self(data[:, [0,3,5]])# input is in data[:, 0,3,5] Lx,E,p
+                ground_truths = data[:, -3:] # ux,uy,uz
                 loss = criterion(predicted, ground_truths)
                 val_loss += loss.item()
         val_loss /= len(val_loader)
@@ -133,15 +132,11 @@ def generate_test_dataset(Ly, Lz, nu, nx=33, ny=33, nz=33):
 # Testing the model
 def test_analytic(model, criterion, test_loader):
     test_loss = 0
-    
     with torch.no_grad():
         for data, target in test_loader:
             output = model(data)
             test_loss += criterion(output, target).item()
-            
-    test_loss /= len(test_loader.dataset)
-    tqdm.write('Test set: Average loss: {:.4f}'.format(test_loss))
-    
+    test_loss /= len(test_loader)    
     return test_loss
 
 
@@ -162,14 +157,15 @@ if __name__ == '__main__':
 
     # Defining the model
     mlp = MLP()
-    mlp.train(train_loader, val_loader=val_loader, num_epochs=100, analytic = True) 
+    mlp.train(train_loader, val_loader=val_loader, num_epochs=30, analytic = True) 
     ## Plotting the loss
     plt.style.use('seaborn')
-    plt.plot(mlp.loss, label='Training Loss', marker='o')
-    plt.plot(mlp.loss_val, label='Validation Loss', marker='s')
-    plt.plot(mlp.loss_analytic, label='Analytic Loss', marker='s')
+    plt.semilogy(mlp.loss, label='Training Loss', marker='o')
+    plt.semilogy(mlp.loss_val, label='Validation Loss', marker='s')
+    plt.semilogy(mlp.loss_analytic, label='Analytic Loss', marker='s')
     plt.legend()
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.title('Comparison of Training Loss, Validation Loss, and Analytic Loss')
     plt.show()
+    pass
