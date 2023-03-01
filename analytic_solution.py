@@ -27,16 +27,12 @@ def compute_analytic_solution(x, y, z, *data):
 
 # From main
 if __name__ == '__main__':
-    E = 1.
-    pressure = 5.
-    nu = .3
-    Lx = 2 
-    Ly = 1
-    Lz = 1
 
-    data = (E, nu, pressure, Lx, Ly, Lz)
+    sample_8220 = (1.9,1,1,1.3,.3,3.0,-1.443487,0.224480,0.224480)
+    Lx, Ly, Lz, E, nu, p, Ux_train, Uy_train, Uz_train = sample_8220
 
-    ux, uy, uz = compute_analytic_solution(Lx,Ly,Lz, E, nu, pressure)
+    ux, uy, uz = compute_analytic_solution(Lx,Ly,Lz, E, nu, p)
     
     # Print ux, uy and uz with text
-    print("ux is: %.2f m, uy is: %.2f m, uz is: %.2f m" % (ux, uy, uz))
+    print("ux_train is: %.5f m, uy_train is: %.5f m, uz_train is: %.5f m" % (Ux_train, Uy_train, Uz_train))
+    print("ux_test is: %.5f m, uy_test is: %.5f m, uz_test is: %.5f m" % (ux, uy, uz))
