@@ -64,7 +64,7 @@ class MLP(nn.Module):
     def forward(self, x):
         return self.layers(x)
 
-    def train(self, train_loader, val_loader, optimizer=None, criterion=None, num_epochs=2000, analytic=False):
+    def train(self, train_loader, val_loader, optimizer=None, criterion=None, num_epochs=2000, analytic=False,verbose=False):
         if optimizer is None:
             optimizer = self.optimizer
         if criterion is None:
@@ -88,7 +88,7 @@ class MLP(nn.Module):
 
             train_loss /= len(train_loader)
             val_loss = self.val(val_loader, criterion)
-            if(analytic==False):
+            if(analytic==False and verbose):
                 tqdm.write(f"Epoch: {epoch}, Train Loss: {train_loss}, Val Loss: {val_loss}")
 
             self.loss.append(train_loss)
@@ -96,7 +96,8 @@ class MLP(nn.Module):
 
             if(analytic):
                 self.loss_analytic.append(test_analytic(self, criterion,test_loader))
-                tqdm.write(f"Epoch: {epoch}, Train Loss: {train_loss}, Val Loss: {val_loss}, Analytic Loss: {self.loss_analytic[-1]}")
+                if(verbose):
+                    tqdm.write(f"Epoch: {epoch}, Train Loss: {train_loss}, Val Loss: {val_loss}, Analytic Loss: {self.loss_analytic[-1]}")
 
     def val(self, val_loader, criterion):
         #self.eval()
@@ -157,7 +158,7 @@ if __name__ == '__main__':
 
     # Defining the model
     mlp = MLP()
-    mlp.train(train_loader, val_loader=val_loader, num_epochs=30, analytic = True) 
+    mlp.train(train_loader, val_loader=val_loader, num_epochs=100, analytic = True) 
     ## Plotting the loss
     plt.style.use('seaborn')
     plt.semilogy(mlp.loss, label='Training Loss', marker='o')
@@ -167,5 +168,9 @@ if __name__ == '__main__':
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.title('Comparison of Training Loss, Validation Loss, and Analytic Loss')
-    plt.show()
+    #plt.show()
+
+    #save the image
+    plt.savefig('loss.png')
+
     pass
