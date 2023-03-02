@@ -158,9 +158,9 @@ if __name__ == '__main__':
 
     # Defining the model
     mlp = MLP()
-    mlp.train(train_loader, val_loader=val_loader, num_epochs=100, analytic = True) 
+    mlp.train(train_loader, val_loader=val_loader, num_epochs=1, analytic = True) 
     ## Plotting the loss
-    plt.style.use('seaborn')
+    plt.style.use("seaborn-v0_8")
     plt.semilogy(mlp.loss, label='Training Loss', marker='o')
     plt.semilogy(mlp.loss_val, label='Validation Loss', marker='s')
     plt.semilogy(mlp.loss_analytic, label='Analytic Loss', marker='s')
