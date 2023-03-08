@@ -29,60 +29,43 @@ clear all, close all
 %   p = 3;
 % end
 
-E1 = 1 ; nu1 = 0.3 ; p = -5 ; Lx = 2 ; Ly = 1 ; Lz = 1 ;
-E2 = 1 ; nu2 = 0.3 ;
-
-% function [matUs,loadFactorsMat] = uniaxialCompression2mat(Lx,Ly,Lz,E1,nu1,E2,nu2,p)
+function [matUs,loadFactorsMat] = uniaxialCompression2mat(Lx,Ly,Lz,E1,nu1,E2,nu2,p)
   %md
   addpath( genpath( getenv("ONSAS_PATH") ) );
   %md
   %md### MEBI parameters
   %md
   %md#### materials
-  %md The material of the solid considered is the Saint-Venant-Kirchhoff with Lamé parameters computed as
+  %md material 1:
   lambda_1 = E1*nu1/((1+nu1)*(1-2*nu1)) ; mu_1 = E1/(2*(1+nu1)) ;
   bulk_1 = E1 / ( 3*(1-2*nu1) ) ;
-  lambda_2 = E2*nu2/((1+nu2)*(1-2*nu2)) ; mu_2 = E2/(2*(1+nu2)) ;
-  bulk_2 = E2 / ( 3*(1-2*nu2) ) ;
-  %md since only one material is considered, a scalar struct is defined as follows
   materials(1).hyperElasModel = 'NHC' ;
   materials(1).hyperElasParams = [ mu_1 bulk_1 ] ;
+  %md material 2:
+  lambda_2 = E2*nu2/((1+nu2)*(1-2*nu2)) ; mu_2 = E2/(2*(1+nu2)) ;
+  bulk_2 = E2 / ( 3*(1-2*nu2) ) ;
   materials(2).hyperElasModel = 'NHC' ;
   materials(2).hyperElasParams = [ mu_2 bulk_2 ] ;
   %md
   %md#### elements
-  %md In this model two kinds of elements are used: `tetrahedron` for the solid and `triangle` for introducing the external loads. Since two kinds of elements are used, the struct have length 2:
   elements(1).elemType = 'triangle' ;
   elements(2).elemType = 'tetrahedron' ;
   elements(2).elemTypeParams = [ 2 ] ;
   %md
   %md#### boundaryConds
-  %md in this case four BCs are considered, one corresponding to a load and three to displacements.
-  %md the first BC introduced is a load, then the coordinate system, loadfactor time function and base load vector are defined
+  %md Load:
   boundaryConds(1).loadsCoordSys = 'global';
   boundaryConds(1).loadsTimeFact = @(t) p*t ;
-  boundaryConds(1).loadsBaseVals = [ -1 0 0 0 0 0 ] ;
-  %md the other BCs have imposed displacements
+  boundaryConds(1).loadsBaseVals = [ 0 0 1 0 1 0 ] ;
+  %md Clamped:
   boundaryConds(2).imposDispDofs = [1 2 3 4 5 6 ] ;
   boundaryConds(2).imposDispVals = [0 0 0 0 0 0 ] ;
   %
   %md
   %md#### initialConds
-  %md since no initial non-homogeneous initial conditions are used, an empty struct is used .
   initialConds = struct();
   %md
   %md### Mesh
-  %md A simple hand-made 8-node mesh, with 6 tetrahedrons is considered
-  %md
-  %md```@raw html
-  %md<img src="https://raw.githubusercontent.com/ONSAS/ONSAS_docs/master/docs/src/solidCubeMeshHTML.svg" alt="mesh diagram" width="500"/>
-  %md```
-  %md```@raw latex
-  %md\begin{center}
-  %md\def\svgwidth{0.6\textwidth}
-  %md\input{solidCubeMeshPDF.pdf_tex}
-  %md\end{center}
-  %md```
   %md The node coordinates matrix is given by the following
   mesh.nodesCoords = [ 0    0    0 ; ...
                       0     0   Lz ; ...
@@ -96,7 +79,7 @@ E2 = 1 ; nu2 = 0.3 ;
                       Lx    0   Lz ; ...
                       Lx    Ly  Lz ; ...
                       Lx    Ly  0 ] ;
-  %md and the connectivity cell is defined as follows with the four MEBI parameters for each element followed by the indexes of the nodes of each element. All the eight triangle elements are considered with no material (since they are used only to include load) and the following six elements are solid SVK material tetrahedrons.
+  %md and the connectivity cell is defined as follows:
   mesh.conecCell = {[ 0 1 1    9  12 10   ]; ... % loaded face
                     [ 0 1 1    10 12 11    ]; ... % loaded face
                     [ 0 1 2    4  1  2     ]; ... % x=0 supp face
@@ -106,15 +89,14 @@ E2 = 1 ; nu2 = 0.3 ;
                     [ 1 2 0    4  3  6  7  ]; ... % tetrahedron
                     [ 1 2 0    4  1  5  6  ]; ... % tetrahedron
                     [ 1 2 0    4  6  5  8  ]; ... % tetrahedron
-                    [ 1 2 0    4  7  6  8  ];  ... % tetrahedron
+                    [ 1 2 0    4  7  6  8  ]; ... % tetrahedron
                     [ 2 2 0    5  8  6  10 ]; ... % tetrahedron
                     [ 2 2 0    10 6  7  8  ]; ... % tetrahedron
                     [ 2 2 0    8  7  10 11 ]; ... % tetrahedron
                     [ 2 2 0    8  5  9  10 ]; ... % tetrahedron
                     [ 2 2 0    8  10 9  12 ]; ... % tetrahedron
-                    [ 2 2 0    8  11 10 12 ] ... % tetrahedron
+                    [ 2 2 0    8  11 10 12 ] ...  % tetrahedron
                   } ;
-
   %md
   %md### Analysis parameters
   %md
@@ -126,42 +108,50 @@ E2 = 1 ; nu2 = 0.3 ;
   analysisSettings.deltaT        = .01     ;
   %md
   %md### Output parameters
-  otherParams.plotsFormat = 'vtk' ;
+  otherParams.plots_format = 'vtk' ;
   otherParams.problemName = 'uniaxialCompression_HandMadeMesh' ;
   %md
   [matUs, loadFactorsMat] = ONSAS( materials, elements, boundaryConds, initialConds, mesh, analysisSettings, otherParams ) ;
   %md
-% end
+end
 
+E1 = 2 ; nu1 = 0.3 ; p = .1 ; Lx = 2 ; Ly = 1 ; Lz = 1 ;
+E2 = 4 ; nu2 = 0.15 ;
 
-% [matUs,loadFactorsMat, analyticVals] = uniaxialCompression(Lx,Ly,Lz,E,nu,p)
+% Run ONSAS
+[matUs,loadFactorsMat] = uniaxialCompression2mat(Lx,Ly,Lz,E1,nu1,E2,nu2,p) ;
 
-
-controlDispsValsCase = matUs(6*6+1,:) ;  
-%disp(matUs)
-matUslast = matUs(:,end)
-loadedfacenodeindexes = [ 5 6 7 8 ] ;
-loadedfaceDoFs = nodes2dofs( loadedfacenodeindexes, 6 ) ;
-loadedfaceDoFsUs = loadedfaceDoFs(1:2:end);
-Usloaded=matUslast(loadedfaceDoFsUs);
-Ux = mean(Usloaded(1:3:end));
-Uy = (Usloaded(8)+Usloaded(11))/2;
-Uz = (Usloaded(6)+Usloaded(9))/2;
-%return Ux, Uy, Uz;
-%dlmwrite('output.txt', [Ux, Uy, Uz]);
+% Extract dipslacements at the loaded face (x = Lx)
+loadedFaceNodesIndexes = [9:12]
+% dofs
+dofsLoadedFaceUx = (loadedFaceNodesIndexes - 1) * 6 + 1 ;
+dofsLoadedFaceUy = (loadedFaceNodesIndexes - 1) * 6 + 3 ;
+dofsLoadedFaceUz = (loadedFaceNodesIndexes - 1) * 6 + 5 ;
+% displacements
+dispUx = matUs(dofsLoadedFaceUx, :) ;
+dispUy = matUs(dofsLoadedFaceUy, :) ;
+dispUz = matUs(dofsLoadedFaceUz, :) ;
+% displacements at point G
+dispUx_G = sum(dispUx, 1)/4
+dispUy_G = sum(dispUy, 1)/4
+dispUz_G = sum(dispUz, 1)/4
+% plot
+plotBool = true
+if plotBool
+  lw = 2.0 ; ms = 11 ; plotfontsize = 18 ;
+  figure, hold on, grid on
+  plot( p*loadFactorsMat, dispUx_G, 'r-' , 'linewidth', lw,'markersize',ms )
+  plot( p*loadFactorsMat, dispUy_G, 'b-' , 'linewidth', lw,'markersize',ms )
+  plot( p*loadFactorsMat, dispUz_G, 'g-' , 'linewidth', lw,'markersize',ms )
+  labx = xlabel('Pressure [Pa]');   laby = ylabel('Displacement [m]') ;
+  legend('u_x ', 'u_y ', 'u_z ', 'location', 'NorthWest' )
+  set(gca, 'linewidth', 1.0, 'fontsize', plotfontsize )
+  set(labx, 'FontSize', plotfontsize); set(laby, 'FontSize', plotfontsize) ;
+  % print("./output/validation.png")
+end
+% print in a .txt
 fid = fopen('output.txt', 'w');
-fprintf(fid, '%f\n', Ux);
-fprintf(fid, '%f\n', Uy);
-fprintf(fid, '%f\n', Uz);
+fprintf(fid, '%f\n', dispUx_G(end));
+fprintf(fid, '%f\n', dispUy_G(end));
+fprintf(fid, '%f\n', dispUz_G(end));
 fclose(fid);
-%md## Plot
-%mdThe numerical and analytic solutions are plotted.
-% lw = 2.0 ; ms = 11 ; plotfontsize = 18 ;
-% figure, hold on, grid on
-% plot( controlDispsValsCase, loadFactorsMat, 'r-x' , 'linewidth', lw,'markersize',ms )
-% plot( controlDispsValsCase, analyticVals,  'g-s' , 'linewidth', lw,'markersize',ms )
-% labx = xlabel('Displacement');   laby = ylabel('\lambda(t)') ;
-% legend( 'Numeric', 'Analytic' , 'location', 'SouthEast' )
-% set(gca, 'linewidth', 1.0, 'fontsize', plotfontsize )
-% set(labx, 'FontSize', plotfontsize); set(laby, 'FontSize', plotfontsize) ;
-% print("./output/validation.png")
