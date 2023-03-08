@@ -1,36 +1,46 @@
-%md# Uniaxial Compression example
+%md# Cantilever solid two materials example.
 %md---
-%md
 clear all, close all
 
-% % Define input arguments
-% arg_list = argv ();
+% Define input arguments
+arg_list = argv ();
+arg_list = (Lx, E1, E2, p, nu1, nu2, Ly, Lz)
 
-% if nargin < 3 
-%   error("At least Lx, Ly and Lz must be defined")
-% end
-% Lx = str2num(arg_list{1}) ; Ly = str2num(arg_list{2}) ; Lz = str2num(arg_list{3}) ;
 
-% if nargin >= 4
-%   E = str2num(arg_list{4}) ;
-% else
-%   E =1;
-% end
+if nargin < 4 
+  error("At least Lx, E1, E2 and p must be defined")
+end
+Lx = str2num(arg_list{1}) ; 
+E1 = str2num(arg_list{2}) ; 
+E2 = str2num(arg_list{3}) ;
+p = str2num(arg_list{4}) ;
 
-% if nargin >= 5
-%   nu = str2num(arg_list{5}) ;
-% else
-%   nu = .3;
-% end
+if nargin >= 4
+  nu1 = str2num(arg_list{5}) ;
+else
+  nu1 =.3;
+end
 
-% if nargin >= 6
-%   p = str2num(arg_list{6}) ;
-% else
-%   p = 3;
-% end
+if nargin >= 5
+  nu2 = str2num(arg_list{6}) ;
+else
+  nu2 =.3;
+end
+
+if nargin >= 6
+  Ly = str2num(arg_list{7}) ;
+else
+  Ly = 1;
+end
+
+if nargin >= 7
+  Lz = str2num(arg_list{8}) ;
+else
+  Lz = 1;
+end
 
 function [matUs,loadFactorsMat] = uniaxialCompression2mat(Lx,Ly,Lz,E1,nu1,E2,nu2,p)
-  %md
+  %md## ONSAS path stored in an ENV variable
   addpath( genpath( getenv("ONSAS_PATH") ) );
   %md
   %md### MEBI parameters
@@ -109,14 +119,11 @@ function [matUs,loadFactorsMat] = uniaxialCompression2mat(Lx,Ly,Lz,E1,nu1,E2,nu2
   %md
   %md### Output parameters
   otherParams.plots_format = 'vtk' ;
-  otherParams.problemName = 'uniaxialCompression_HandMadeMesh' ;
+  otherParams.problemName = 'cantileverSolid_HandMadeMesh' ;
   %md
   [matUs, loadFactorsMat] = ONSAS( materials, elements, boundaryConds, initialConds, mesh, analysisSettings, otherParams ) ;
   %md
 end
-
-E1 = 2 ; nu1 = 0.3 ; p = .1 ; Lx = 2 ; Ly = 1 ; Lz = 1 ;
-E2 = 4 ; nu2 = 0.15 ;
 
 % Run ONSAS
 [matUs,loadFactorsMat] = uniaxialCompression2mat(Lx,Ly,Lz,E1,nu1,E2,nu2,p) ;
