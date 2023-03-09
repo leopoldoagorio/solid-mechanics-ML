@@ -22,11 +22,11 @@ Ly_values=(1)
 Lz_values=(.5)
 # Materials 
 E1_values=(1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4)
-nu1_values=(.3)
+nu1_values=(.3).
 E2_values=(1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4)
 nu2_values=(.3)
 # Difne a linspace vector
-p_values=(0.05 0.06 0.07 0.08 0.08 0.1 0.11 0.12 0.13 0.14 0.15)
+p_values=(0.05 0.06 0.07 0.08 0.08 0.1 0.11 0.12 0.13 0.14)
 
 
 # Calculate the total number of iterations to be run

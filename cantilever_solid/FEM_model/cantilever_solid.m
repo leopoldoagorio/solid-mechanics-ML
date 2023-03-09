@@ -5,8 +5,6 @@ clear all, close all
 % Define input arguments
 arg_list = argv (); % (Lx, E1, E2, p, nu1, nu2, Ly, Lz)
 
-disp(nargin)
-
 if nargin < 4 
   error("At least Lx, E1, E2 and p must be defined")
 end
