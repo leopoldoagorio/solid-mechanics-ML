@@ -4,7 +4,8 @@
 # The results are stored in a CSV file named results_YYYY-MM-DD_HH-MM-SS.csv.
 
 # Navigate to the folder ~/Documents/mamaML
-mkdir ./data/
+cd ~/Documents/mamaML
+#export ONSAS_PATH="/home/leopoldo/Documents/ONSAS.m/src"
 
 # Create a timestamp to be used as the file name
 timestamp=$(date +%Y-%m-%d_%H-%M-%S)
@@ -16,15 +17,11 @@ rm cliOutput.txt > /dev/null 2>&1
 rm output.txt > /dev/null 2>&1
 
 # Define the Lx, Ly, Lz, and p values to be used in the iterations
-# Geometry
 Lx_values=(1 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5 2.6 2.7 2.8 2.9 3.0)
 Ly_values=(1)
 Lz_values=(1)
-# Materials 
-E1_values=(1 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5 2.6 2.7 2.8 2.9 3.0 3.1 3.2 3.4 3.5 3.6 3.7 3.8 3.9 4.0)
-nu1_values=(.3)
-
-
+E_values=(1 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5 2.6 2.7 2.8 2.9 3.0 3.1 3.2 3.4 3.5 3.6 3.7 3.8 3.9 4.0)
+nu_values=(.3)
 p_values=(0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5 2.6 2.7 2.8 2.9 3.0)
 
 # Calculate the total number of iterations to be run
@@ -49,7 +46,7 @@ for Lx in "${Lx_values[@]}"; do
         for nu in "${nu_values[@]}"; do
           for p in "${p_values[@]}"; do
           # Run the Octave script with the specified input values
-          LC_ALL=C octave -q uniaxialCompression/uniaxialCompression.m $Lx $Ly $Lz $E $nu $p > cliOutput.txt
+          LC_ALL=C octave -q ./../FEM_model/uniaixial_compression.m $Lx $Ly $Lz $E $nu $p > cliOutput.txt
           
           # Get the output values of Ux, Uy, and Uz
           Ux=$(sed -n 1p output.txt)

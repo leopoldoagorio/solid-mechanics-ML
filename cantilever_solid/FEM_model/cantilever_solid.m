@@ -3,9 +3,9 @@
 clear all, close all
 
 % Define input arguments
-arg_list = argv ();
-arg_list = (Lx, E1, E2, p, nu1, nu2, Ly, Lz)
+arg_list = argv (); % (Lx, E1, E2, p, nu1, nu2, Ly, Lz)
 
+disp(nargin)
 
 if nargin < 4 
   error("At least Lx, E1, E2 and p must be defined")
@@ -15,31 +15,31 @@ E1 = str2num(arg_list{2}) ;
 E2 = str2num(arg_list{3}) ;
 p = str2num(arg_list{4}) ;
 
-if nargin >= 4
+if nargin > 4
   nu1 = str2num(arg_list{5}) ;
 else
   nu1 =.3;
 end
 
-if nargin >= 5
+if nargin > 5
   nu2 = str2num(arg_list{6}) ;
 else
   nu2 =.3;
 end
 
-if nargin >= 6
+if nargin > 6
   Ly = str2num(arg_list{7}) ;
 else
   Ly = 1;
 end
 
-if nargin >= 7
+if nargin > 7
   Lz = str2num(arg_list{8}) ;
 else
-  Lz = 1;
+  Lz = .5;
 end
 
-function [matUs,loadFactorsMat] = uniaxialCompression2mat(Lx,Ly,Lz,E1,nu1,E2,nu2,p)
+function [matUs,loadFactorsMat] = cantilever_solid(Lx,Ly,Lz,E1,nu1,E2,nu2,p)
   %md## ONSAS path stored in an ENV variable
   addpath( genpath( getenv("ONSAS_PATH") ) );
   %md
@@ -63,13 +63,18 @@ function [matUs,loadFactorsMat] = uniaxialCompression2mat(Lx,Ly,Lz,E1,nu1,E2,nu2
   elements(2).elemTypeParams = [ 2 ] ;
   %md
   %md#### boundaryConds
-  %md Load:
+  %md Compression load:
   boundaryConds(1).loadsCoordSys = 'global';
   boundaryConds(1).loadsTimeFact = @(t) p*t ;
-  boundaryConds(1).loadsBaseVals = [ 0 0 1 0 1 0 ] ;
+  boundaryConds(1).loadsBaseVals = [ -1 0 0 0 0 0 ] ;
+  %md Transverse loads:
+  boundaryConds(2).loadsCoordSys = 'global';
+  lateral_load = 1e-2
+  boundaryConds(2).loadsTimeFact = @(t) lateral_load ;
+  boundaryConds(2).loadsBaseVals = [ 0 0 1 0 1 0 ] ;
   %md Clamped:
-  boundaryConds(2).imposDispDofs = [1 2 3 4 5 6 ] ;
-  boundaryConds(2).imposDispVals = [0 0 0 0 0 0 ] ;
+  boundaryConds(3).imposDispDofs = [1 2 3 4 5 6 ] ;
+  boundaryConds(3).imposDispVals = [0 0 0 0 0 0 ] ;
   %
   %md
   %md#### initialConds
@@ -90,10 +95,12 @@ function [matUs,loadFactorsMat] = uniaxialCompression2mat(Lx,Ly,Lz,E1,nu1,E2,nu2
                       Lx    Ly  Lz ; ...
                       Lx    Ly  0 ] ;
   %md and the connectivity cell is defined as follows:
-  mesh.conecCell = {[ 0 1 1    9  12 10   ]; ... % loaded face
+  mesh.conecCell = {[ 0 1 1    9  12 10    ]; ... % loaded face
                     [ 0 1 1    10 12 11    ]; ... % loaded face
-                    [ 0 1 2    4  1  2     ]; ... % x=0 supp face
-                    [ 0 1 2    4  2  3     ]; ... % x=0 supp face
+                    [ 0 1 2    9  12 10    ]; ... % loaded face
+                    [ 0 1 2    10 12 11    ]; ... % loaded face
+                    [ 0 1 3    4  1  2     ]; ... % x=0 supp face
+                    [ 0 1 3    4  2  3     ]; ... % x=0 supp face
                     [ 1 2 0    1  4  2  6  ]; ... % tetrahedron
                     [ 1 2 0    6  2  3  4  ]; ... % tetrahedron
                     [ 1 2 0    4  3  6  7  ]; ... % tetrahedron
@@ -111,25 +118,23 @@ function [matUs,loadFactorsMat] = uniaxialCompression2mat(Lx,Ly,Lz,E1,nu1,E2,nu2
   %md### Analysis parameters
   %md
   analysisSettings.methodName    = 'newtonRaphson' ;
-  analysisSettings.stopTolIts    = 30     ;
-  analysisSettings.stopTolDeltau = 1.0e-8 ;
+  analysisSettings.stopTolIts    = 50     ;
   analysisSettings.stopTolForces = 1.0e-8 ;
-  analysisSettings.finalTime      = 1      ;
-  analysisSettings.deltaT        = .01     ;
+  analysisSettings.finalTime     = 1      ;
+  analysisSettings.deltaT        = .05    ;
   %md
   %md### Output parameters
   otherParams.plots_format = 'vtk' ;
-  otherParams.problemName = 'cantileverSolid_HandMadeMesh' ;
+  otherParams.problemName = 'cantilever_solid' ;
   %md
   [matUs, loadFactorsMat] = ONSAS( materials, elements, boundaryConds, initialConds, mesh, analysisSettings, otherParams ) ;
   %md
 end
 
 % Run ONSAS
-[matUs,loadFactorsMat] = uniaxialCompression2mat(Lx,Ly,Lz,E1,nu1,E2,nu2,p) ;
-
+[matUs,loadFactorsMat] = cantilever_solid(Lx,Ly,Lz,E1,nu1,E2,nu2,p) ;
 % Extract dipslacements at the loaded face (x = Lx)
-loadedFaceNodesIndexes = [9:12]
+loadedFaceNodesIndexes = [9:12];
 % dofs
 dofsLoadedFaceUx = (loadedFaceNodesIndexes - 1) * 6 + 1 ;
 dofsLoadedFaceUy = (loadedFaceNodesIndexes - 1) * 6 + 3 ;
@@ -139,11 +144,16 @@ dispUx = matUs(dofsLoadedFaceUx, :) ;
 dispUy = matUs(dofsLoadedFaceUy, :) ;
 dispUz = matUs(dofsLoadedFaceUz, :) ;
 % displacements at point G
-dispUx_G = sum(dispUx, 1)/4
-dispUy_G = sum(dispUy, 1)/4
-dispUz_G = sum(dispUz, 1)/4
+dispUx_G = sum(dispUx, 1) / 4;
+dispUy_G = sum(dispUy, 1) / 4;
+dispUz_G = sum(dispUz, 1) / 4;
+% Ux, Uy and Uz predicted 
+fid = fopen('output.txt', 'w');
+Ux = dispUx_G(end);
+Uy = dispUy_G(end);
+Uz = dispUz_G(end);
 % plot
-plotBool = true
+plotBool = false
 if plotBool
   lw = 2.0 ; ms = 11 ; plotfontsize = 18 ;
   figure, hold on, grid on
@@ -158,7 +168,7 @@ if plotBool
 end
 % print in a .txt
 fid = fopen('output.txt', 'w');
-fprintf(fid, '%f\n', dispUx_G(end));
-fprintf(fid, '%f\n', dispUy_G(end));
-fprintf(fid, '%f\n', dispUz_G(end));
+fprintf(fid, '%f\n', Ux);
+fprintf(fid, '%f\n', Uy);
+fprintf(fid, '%f\n', Uz);
 fclose(fid);

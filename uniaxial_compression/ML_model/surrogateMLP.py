@@ -56,10 +56,11 @@ class MLP(nn.Module):
         self.loss_analytic = []
         self.test_loss = []
 
-        if torch.cuda.is_available():
-            self.device = torch.device('cuda')
-        else:
-            self.device = torch.device('cpu')
+        # if torch.cuda.is_available():
+        #     self.device = torch.device('cuda')
+        # else:
+        #     self.device = torch.device('cpu')
+        self.device = torch.device('cpu')
 
     def forward(self, x):
         return self.layers(x)
@@ -144,7 +145,7 @@ def test_analytic(model, criterion, test_loader):
 # Main
 if __name__ == '__main__':
     # Loading the data
-    dataset = uniCompDataset('data.csv')
+    dataset = uniCompDataset('./../data/data.csv')
 
     # Splitting the data into training and validation sets
     train_size = int(0.8 * len(dataset))
@@ -158,7 +159,7 @@ if __name__ == '__main__':
 
     # Defining the model
     mlp = MLP()
-    mlp.train(train_loader, val_loader=val_loader, num_epochs=1, analytic = True) 
+    mlp.train(train_loader, val_loader=val_loader, num_epochs=100, analytic = True) 
     ## Plotting the loss
     plt.style.use("seaborn-v0_8")
     plt.semilogy(mlp.loss, label='Training Loss', marker='o')
