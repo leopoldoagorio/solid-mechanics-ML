@@ -46,7 +46,7 @@ for Lx in "${Lx_values[@]}"; do
         for nu in "${nu_values[@]}"; do
           for p in "${p_values[@]}"; do
           # Run the Octave script with the specified input values
-          LC_ALL=C octave -q uniaxialCompression/uniaxialCompression.m $Lx $Ly $Lz $E $nu $p > cliOutput.txt
+          LC_ALL=C octave -q ./../FEM_model/uniaixial_compression.m $Lx $Ly $Lz $E $nu $p > cliOutput.txt
           
           # Get the output values of Ux, Uy, and Uz
           Ux=$(sed -n 1p output.txt)

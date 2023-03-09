@@ -1,3 +1,4 @@
 */output/*
 *.vtk
-
+octave-workspace
+__pycache__
