@@ -20,3 +20,11 @@ Wensdays 11:00 am at: [![zoom](https://img.shields.io/badge/zoom-meetings-red)](
 - Mauricio shares [this reference ](https://www.sciencedirect.com/science/article/pii/S2666990022000040)about surrogate modes to predict breast displacements field. 
 -  Leo shows showed scripts to generate .csv results. Features [ $L_x$ ,  $E$ ,  $p$ ] targets  [ $u_x$ , $u_y$ , $u_z$ ]
 - Bruno contributes to the analytic solution of the uni-axial compression example.
+
+### 08.03.22
+- We discussed possible reasons on difference between validation and train losses. We opened an issue #33 to attack this strange behavior.  
+- We set the definition for the new two materials example with ONSAS #31. 
+- Bruno and Mauricio discussed experimental results obtained with a foam cube by Santiago from IIMPI as a possible example to model in ONSAS. 
+- Bruno agreed on the MLP model implementation.
+- Bruno shared [this book](https://www.amazon.com/Hands-Machine-Learning-Scikit-Learn-TensorFlow/dp/1492032646)
+- Leo shared XGboost tool form sklearn. And we defined to try it on the first example.  
