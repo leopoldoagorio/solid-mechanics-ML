@@ -27,4 +27,4 @@ Wensdays 11:00 am at: [![zoom](https://img.shields.io/badge/zoom-meetings-red)](
 - Bruno and Mauricio discussed experimental results obtained with a foam cube by Santiago from IIMPI as a possible example to model in ONSAS. 
 - Bruno agreed on the MLP model implementation.
 - Bruno shared [this book](https://www.amazon.com/Hands-Machine-Learning-Scikit-Learn-TensorFlow/dp/1492032646)
-- Leo shared XGboost tool form sklearn. And we defined to try it on the first example.  
+- Leo shared XGboost tool form sklearn. And we defined to try it on the first example. 
