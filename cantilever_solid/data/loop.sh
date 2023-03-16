@@ -22,11 +22,14 @@ Ly_values=(1)
 Lz_values=(.5)
 # Materials 
 E1_values=(1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4)
-nu1_values=(.3).
+# E1_values=(1.4)
+nu1_values=(.3)
+# E2_values=(1.4)
 E2_values=(1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4)
 nu2_values=(.3)
 # Difne a linspace vector
 p_values=(0.05 0.06 0.07 0.08 0.08 0.1 0.11 0.12 0.13 0.14)
+# p_values=(0.05)
 
 
 # Calculate the total number of iterations to be run
@@ -54,6 +57,7 @@ for Lx in "${Lx_values[@]}"; do
           for nu2 in "${nu2_values[@]}"; do
             for nu1 in "${nu1_values[@]}"; do
               for p in "${p_values[@]}"; do
+                
                 # Run the Octave script with the specified input values
                 LC_ALL=C octave -q ./../FEM_model/cantilever_solid.m $Lx $E1 $E2 $p $nu1 $nu2 $Ly $Lz > cliOutput.txt
                 
@@ -64,7 +68,7 @@ for Lx in "${Lx_values[@]}"; do
                 
                 # Increase the current iteration count
                 current_its=$((current_its+1))
-                
+              
                 # Print the current iteration count and the input values every 10 iterations
                 if [ $((current_its % 10)) -eq 0 ]; then
                   echo "Iteration $current_its of $total_its, Lx=$Lx, Ly=$Ly, Lz=$Lz, E1=$E1, nu1=$nu1, E1=$E1, nu1=$nu1 p=$p, Ux=$Ux, Uy=$Uy, Uz=$Uz"
