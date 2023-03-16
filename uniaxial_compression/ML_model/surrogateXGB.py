@@ -194,14 +194,12 @@ if __name__ == '__main__':
     plt.savefig('loss.png')
 
     # Compute the error versus the NN and ONSAS solution for an outlier (most flexible case).
-    pred = mlp(torch.tensor([[2.9, 0.5, 2.9]], dtype=torch.float)).detach().numpy()
+    pred = mlp(torch.tensor([[2.9, 0.5, 2.9]], dtype=torch.float))
     ux, uy, uz = compute_analytic_solution(2.9, 1.0, 1.0, 0.5, 0.3, 2.9)
     print('NN solution: ', pred)
     print('Analytic solution: ', ux, uy, uz)
-    error = np.sqrt((pred[0][0]-ux)**2+(pred[0][1]-uy)**2+(pred[0][2]-uz)**2)/np.sqrt(ux**2+uy**2+uz**2)
+    error = np.sqrt((pred[0][0]-ux)**2+(pred[0][1]-uy)**2+(pred[0][2]-uz)**2)
     print('Error: ', error)
-    #relative error
-    
 
 
     pass
