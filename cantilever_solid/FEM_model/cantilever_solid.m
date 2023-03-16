@@ -122,7 +122,7 @@ function [matUs,loadFactorsMat] = cantilever_solid(Lx,Ly,Lz,E1,nu1,E2,nu2,p)
   analysisSettings.deltaT        = .05    ;
   %md
   %md### Output parameters
-  otherParams.plots_format = 'vtk' ;
+  otherParams.plots_format = '' ;
   otherParams.problemName = 'cantilever_solid' ;
   %md
   [matUs, loadFactorsMat] = ONSAS( materials, elements, boundaryConds, initialConds, mesh, analysisSettings, otherParams ) ;
