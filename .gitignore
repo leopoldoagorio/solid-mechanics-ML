@@ -1,4 +1,10 @@
 */output/*
 *.vtk
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.synctex.gz
+main.pdf
 octave-workspace
 __pycache__
