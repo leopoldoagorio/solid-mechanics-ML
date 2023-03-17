@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# This script runs a set of iterations to execute the Octave script uniaxialCompression.m for different input values of Lx, Ly, Lz, and p.
+# This script runs a set of iterations to execute the Octave script uniaxialCompression.m 
+# for different input values of Lx, Ly, Lz, E1, E2, nu1, nu2 and p.
 # The results are stored in a CSV file named results_YYYY-MM-DD_HH-MM-SS.csv.
 
 # Navigate to the folder ~/Documents/mamaML
@@ -22,14 +23,11 @@ Ly_values=(1)
 Lz_values=(.5)
 # Materials 
 E1_values=(1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4)
-# E1_values=(1.4)
 nu1_values=(.3)
-# E2_values=(1.4)
 E2_values=(1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4)
 nu2_values=(.3)
 # Difne a linspace vector
 p_values=(0.05 0.06 0.07 0.08 0.08 0.1 0.11 0.12 0.13 0.14)
-# p_values=(0.05)
 
 
 # Calculate the total number of iterations to be run
