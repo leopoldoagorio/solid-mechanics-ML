@@ -3,7 +3,7 @@ First tests in automating a pipeline for generating automatically a database of 
 
 ## Meetings
 
-Wensdays 11:00 am at: [![zoom](https://img.shields.io/badge/zoom-meetings-red)](https://salavirtual-udelar.zoom.us/j/88647392899)
+Fridays 10:00 am at: [![zoom](https://img.shields.io/badge/zoom-meetings-red)](https://salavirtual-udelar.zoom.us/j/88647392899)
 
 
 ### 1.02.22
@@ -28,3 +28,10 @@ Wensdays 11:00 am at: [![zoom](https://img.shields.io/badge/zoom-meetings-red)](
 - Bruno agreed on the MLP model implementation.
 - Bruno shared [this book](https://www.amazon.com/Hands-Machine-Learning-Scikit-Learn-TensorFlow/dp/1492032646)
 - Leo shared XGboost tool form sklearn. And we defined to try it on the first example. 
+
+### 17.03.22
+- We discussed the reasons why analytic test is lower than train/validation. We conclude that inputs in the border of the training has an important impact on the analytic test error. Finally, Leo run an acceptable range. 
+
+- We set final goals for the project, excluding XGBoost by the moment. If we get MLP results and we add sufficient detailed documentation on the obtained results then we can try XGBoost. 
+
+- The next example will take 6000 random samples avoiding repetition and split 80/20 for train and validation. 
