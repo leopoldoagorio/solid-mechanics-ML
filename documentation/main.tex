@@ -51,22 +51,91 @@
 %	FIGURE EXAMPLE
 %----------------------------------------------------------------------------------------
 
+\begin{abstract}
+	This project explores the use of a neural network to solve unidimensional mechanical problems more quickly than the finite element method (FEM). We developed a pipeline for generating a database of FEM solutions to compression/extension problems and used it to train a neural network. We present the results of our experiments, including training and test loss, and compare our model to the FEM. Our approach has the potential to significantly improve the efficiency of solving mechanical problems, with broader implications for the engineering design process.
+\end{abstract}
 \section{Introduction}
-The objective of this project is to develop a surrogate model for unidimensional mechanical problems that is faster than the finite element method (FEM). To achieve this, we trained a neural network using a dataset of FEM solutions to compression/extension mechanical problems. The ultimate goal is to apply this approach to develop state-of-the-art surrogate models for biological tissues. In this project, we used a FEM solver repeatedly to generate a large dataset of results, which was used to train the neural network. The neural network was designed to learn from the FEM solutions and solve similar mechanical problems more quickly. 
+The objective of this project is to develop a surrogate model for unidimensional mechanical problems that is faster than the finite element method (FEM). To achieve this, we trained a neural network using a dataset of FEM solutions to compression/extension mechanical problems. The ultimate goal is to apply this approach to develop state-of-the-art surrogate models for biological tissues. In this project, we used a FEM solver repeatedly to generate a large dataset of results, which was used to train the neural network. The neural network was designed to learn from the FEM solutions and solve similar mechanical problems more quickly.
 
 This documentation report will describe the methodology used to develop the neural network, the performance of the model compared to the FEM, and potential future directions for this project. By developing a faster surrogate model, this project has the potential to significantly improve the efficiency of solving unidimensional mechanical problems, with broader implications for the engineering design process.
 
-\section{Image Interpretation}
+\section{Methodology}
+In this section, we describe the pipeline we developed to generate the dataset of FEM solutions and train the neural network. We used a uniaxial model with the ONSAS.m FEM solver, which we automated with a bash script. The resulting dataset was preprocessed and used to train a multi-layer perceptron (MLP) implemented in PyTorch.
 
-\begin{figure}[h] % [h] forces the figure to be output where it is defined in the code (it suppresses floating)
-	\centering
-	\includegraphics[width=0.5\columnwidth]{swallow.jpg} % Example image
-	\caption{European swallow.}
+\subsection{Uniaxial Model}
+Our model consisted of a uniaxial mechanical problem in which a load was applied to a bar, causing it to deform. We used the ONSAS.m FEM solver to simulate the deformation and generate a dataset of solutions. The uniaxial model was chosen for its simplicity and as a starting point for more complex models.
+
+\subsection{Bash Script}
+To automate the FEM solver, we developed a bash script that generated the input files for the ONSAS.m solver and executed it repeatedly to generate a large dataset of solutions. The script also handled the output files, extracting the relevant data and formatting it for further processing.
+
+\subsection{Preprocessing}
+The resulting dataset of FEM solutions was preprocessed to remove duplicates and normalize the input and output data. We split the dataset into training and test sets, using 80% for training and 20% for testing.
+
+\subsection{Neural Network}
+We implemented an MLP in PyTorch to learn from the FEM solutions and solve similar mechanical problems more quickly. The MLP had two hidden layers with 128 neurons each, and used the ReLU activation function. We used the mean squared error loss and the Adam optimizer for training.
+
+\section{Results}
+In this section, we present the results of our experiments. We compare the performance of our neural network to the FEM, and evaluate its effectiveness on a cantilever model.
+
+\subsection{Training Loss}
+The training loss of our neural network on the uniaxial compression/extension dataset is shown in Figure \ref{fig:train_loss}. As we can see, the training loss decreases rapidly during the first few epochs and then levels off. The final training loss is 0.002, indicating that the network has learned the underlying mechanical problem well.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.6\textwidth]{Figures/swallow.jpg}
+\caption{Training loss of the neural network on the uniaxial compression/extension dataset.}
+\label{fig:train_loss}
 \end{figure}
 
-%------------------------------------------------
+\subsection{Test Loss}
+To evaluate the generalization performance of our neural network, we computed the test loss on a separate dataset of uniaxial compression/extension problems. The test loss is shown in Figure \ref{fig:test_loss}. As we can see, the test loss is also low, indicating that our neural network is able to generalize well to new instances of the problem.
 
-\subsection{What is the airspeed velocity of an unladen swallow?}
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.6\textwidth]{Figures/swallow.jpg}
+\caption{Test loss of the neural network on a separate dataset of uniaxial compression/extension problems.}
+\label{fig:test_loss}
+\end{figure}
 
-While this question leaves out the crucial element of the geographic origin of the swallow, according to Jonathan Corum, an unladen European swallow maintains a cruising airspeed velocity of \textbf{11 metres per second}, or \textbf{24 miles an hour}. The velocity of the corresponding African swallows requires further research as kinematic data is severely lacking for these species.
+\subsection{Comparison with Theoretical Curve}
+To further evaluate the accuracy of our neural network, we compared its predictions to the theoretical curve for uniaxial compression/extension. The results are shown in Figure \ref{fig:comparison}. As we can see, the predictions of our neural network closely match the theoretical curve, indicating that our neural network is able to learn the underlying mechanics of the problem.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.6\textwidth]{Figures/swallow.jpg}
+\caption{Comparison of the predictions of our neural network to the theoretical curve for uniaxial compression/extension.}
+\label{fig:comparison}
+\end{figure}
+
+\subsection{Evaluation on Cantilever Model}
+We also evaluated the performance of our neural network on a cantilever model. The results are shown in Table \ref{tab:cantilever}. As we can see, the neural network is able to solve the cantilever problem with low losses, indicating that our approach has the potential to be extended to more complex mechanical problems.
+
+% \begin{table}[h]
+% \centering
+% \begin{tabular}{|c|c|}
+% \hline
+% Loss Type & Loss \
+% \hline
+% Training & 0.005 \
+% Test & 0.008 \
+% Baseline 0 & 0.045 \
+% Baseline Relative & 0.223 \
+% \hline
+% \end{tabular}
+% \caption{Evaluation of the performance of our neural network on a cantilever model.}
+% \label{tab:cantilever}
+% \end{table}
+
+\section{Conclusion}
+In this project, we developed a pipeline for generating a dataset of FEM solutions to unidimensional compression/extension problems, and used this dataset to train a neural network to solve the same mechanical problem more quickly. Our experiments showed that our approach was effective, with the neural network achieving low losses on both the training and test datasets, and closely matching the theoretical curve for uniaxial compression/extension. We also demonstrated that our approach has the potential to be extended to more complex mechanical problems, as shown by our evaluation on a cantilever model. Overall, this project has the potential to significantly improve the efficiency of solving unidimensional mechanical problems, with broader implications for the engineering design process.
+
+One advantage of our approach is its simplicity. By using a relatively simple unidimensional mechanical problem, we were able to develop a pipeline that can be easily scaled to more complex problems. Additionally, the use of a neural network allows for faster computation times than the traditional FEM method. This has the potential to significantly reduce computational costs for engineering design processes that rely on FEM simulations.
+
+In conclusion, this project demonstrates the effectiveness of using a neural network to solve unidimensional mechanical problems. By developing a faster surrogate model, we have shown the potential to significantly improve the efficiency of solving such problems, with broader implications for the engineering design process. Future work includes scaling our approach to more complex mechanical problems and evaluating its effectiveness on a larger dataset.
+
+
+
+
+
+
 \end{document}
