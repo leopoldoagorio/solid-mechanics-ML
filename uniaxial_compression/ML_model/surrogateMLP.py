@@ -19,6 +19,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 import torch.nn as nn
+import pyDOE
 
 # Loading the data
 #echo "$Lx,$Ly,$Lz,$E,$nu,$p,$Ux,$Uy,$Uz" >> "$filename"
@@ -47,22 +48,15 @@ class MLP(nn.Module):
             layers.append(nn.ReLU())
             prev_layer_size = layer_size
         layers.append(nn.Linear(prev_layer_size, output_dim))
-
         self.layers = nn.Sequential(*layers)
         self.optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
         self.criterion = nn.MSELoss()
-
-        self.index_features = [0,3,5]
-        self.index_labels = [-3,-2,-1]
 
         self.loss = []
         self.loss_train_norm = []
         self.loss_val_norm = []
         self.loss_analytic_norm = []
 
-        # if torch.cuda.is_available():
-        #     self.device = torch.device('cuda')
-        # else:
         self.device = torch.device('cpu')
 
     def forward(self, x):
@@ -74,7 +68,7 @@ class MLP(nn.Module):
         if criterion is None:
             criterion = self.criterion
         if(analytic):
-            test_data, test_labels = generate_test_dataset(Ly=1, Lz=1, nu=0.3)
+            test_data, test_labels = generate_test_dataset_lhs(Ly=1, Lz=1, nu=0.3)
             test_dataset = TensorDataset(test_data, test_labels)
             test_loader = DataLoader(test_dataset, batch_size=100, shuffle=True)
 
@@ -83,72 +77,73 @@ class MLP(nn.Module):
             for batch_idx, data in enumerate(train_loader):
                 data = data.to(self.device)
                 optimizer.zero_grad()
-                predicted = self(data[:, self.index_features])# input is in data[:, 0,3,5] Lx,E,p
-                ground_truths = data[:, self.index_labels] # ux,uy,uz
+                predicted = self(data[:, [0,3,5]])# input is in data[:, 0,3,5] Lx,E,p
+                ground_truths = data[:, -3:] # ux,uy,uz
                 loss = criterion(predicted, ground_truths)
                 loss.backward()
                 optimizer.step()
                 train_loss += loss.item()
 
             train_loss /= len(train_loader)
-            loss_train_norm = self.evaluate(val_loader, criterion)
-            val_loss = self.evaluate(val_loader, criterion)
-
+            val_loss_norm = self.val(val_loader, criterion)
+            train_loss_norm = self.val(train_loader, criterion)
             if(analytic==False and verbose):
                 tqdm.write(f"Epoch: {epoch}, Train Loss: {train_loss}, Val Loss: {val_loss}")
 
             self.loss.append(train_loss)
-            self.loss_train_norm.append(loss_train_norm)
-            self.loss_val_norm.append(val_loss)
+            self.loss_train_norm.append(train_loss_norm)
+            self.loss_val_norm.append(val_loss_norm)
 
             if(analytic):
                 self.loss_analytic_norm.append(test_analytic(self, criterion,test_loader))
                 if(verbose):
-                    tqdm.write(f"Epoch: {epoch}, Train Loss: {train_loss}, Val Loss: {val_loss}, Analytic Loss: {self.loss_analytic[-1]}")
+                    tqdm.write(f"Epoch: {epoch}, Train Loss: {train_loss}, Val Loss norm: {val_loss_norm}, Analytic Loss: {self.loss_analytic_norm[-1]}")
 
-    """Computes the loss on a generic dataset """    
-    def evaluate(self, loader, criterion):
+    def val(self, val_loader, criterion):
+        #self.eval()
         val_loss = 0.0
         with torch.no_grad():
-            for data in loader:
+            for data in val_loader:
                 data = data.to(self.device)
-                predicted = self(data[:, self.index_features])
-                ground_truths = data[:, self.index_labels] # ux,uy,uz
-                
+                predicted = self(data[:, [0,3,5]])# input is in data[:, 0,3,5] Lx,E,p
+                ground_truths = data[:, -3:] # ux,uy,uz
+
                 norm_dif = torch.norm((predicted -  ground_truths), dim=1, keepdim=True)**2
                 norms_ground_truth = torch.norm(ground_truths)**2
                 
                 val_loss += torch.sum(norm_dif/norms_ground_truth).item() /len(predicted)
-        val_loss /= len(loader)
+        val_loss /= len(val_loader)
         return val_loss
 
-# Generate ground truth dataset
-def generate_test_dataset(Ly, Lz, nu, nx=33, ny=33, nz=33):
-    Lx_range = np.linspace(1.0, 3.0, nx)
-    Em_range = np.linspace(1.0, 4.0, ny)
-    pressure_range = np.linspace(0.1, 3.0, nz)
+def generate_test_dataset_lhs(Ly, Lz, nu, samples = 200):
+    Lx_range = [1, 3]
+    Em_range = [1.0, 4.0]
+    pressure_range = [0.1, 3.0]
+    design = pyDOE.lhs(3, samples=samples, criterion='maximin')
     test_data = []
     test_labels = []
-    for Lx in Lx_range:
-        for Em in Em_range:
-            for pressure in pressure_range:
-                test_data.append([Lx, Em, pressure])
-                ux, uy, uz = compute_analytic_solution(Lx, Ly, Lz, Em, nu, pressure)
-                test_labels.append([ux, uy, uz])
+    for i in range(samples):
+        Lx = design[i][0]*(Lx_range[1]-Lx_range[0])+Lx_range[0]
+        Em = design[i][1]*(Em_range[1]-Em_range[0])+Em_range[0]
+        pressure = design[i][2]*(pressure_range[1]-pressure_range[0])+pressure_range[0]
+        test_data.append([Lx, Em, pressure])
+        ux, uy, uz = compute_analytic_solution(Lx, Ly, Lz, Em, nu, pressure)
+        test_labels.append([ux, uy, uz])
     test_data = torch.tensor(test_data, dtype=torch.float)
     test_labels = torch.tensor(test_labels, dtype=torch.float)
     return test_data, test_labels
 
-
 # Testing the model
 def test_analytic(model, criterion, test_loader):
-    test_loss = 0.0
+    test_loss = 0
     with torch.no_grad():
         for data, target in test_loader:
-            predicted = model(data)
-            norm_dif = torch.norm((predicted -  target), dim=1, keepdim=True)**2
-            norms_ground_truth = torch.norm(norm_dif)**2
-            test_loss +=torch.sum(norm_dif/norms_ground_truth).item() /len(predicted)
+            output = model(data)
+        
+            norm_dif = torch.norm((output -  target), dim=1, keepdim=True)**2
+            norms_ground_truth = torch.norm(target)**2
+        
+            test_loss += torch.sum(norm_dif/norms_ground_truth).item() /len(target)
 
     test_loss /= len(test_loader)    
     return test_loss
@@ -156,15 +151,12 @@ def test_analytic(model, criterion, test_loader):
 
 # Main
 if __name__ == '__main__':
-
-    # Set a seed for reproducibility
-    torch.manual_seed(0)
-
     # Loading the data
-    dataset = uniCompDataset('./uniaxial_compression/data/data.csv')
+    dataset = uniCompDataset('./uniaxial_compression/data/data.csv')#uniCompDataset('./../data/data.csv')
 
     # Splitting the data into training and validation sets
-    train_size = int(0.8 * len(dataset))
+    frac_train = 0.5
+    train_size = int(frac_train * len(dataset))
     val_size = len(dataset) - train_size
     train_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, val_size])
 
@@ -175,8 +167,8 @@ if __name__ == '__main__':
 
     # Defining the model
     mlp = MLP()
-    # Training the model
-    mlp.train(train_loader, val_loader=val_loader, num_epochs=20, analytic = True) 
+    mlp.train(train_loader, val_loader=val_loader, num_epochs=100, analytic = True) 
+
     ## Plotting the loss
     # Make a subplot with mlp.loss and mlp.loss_val_norm
     fig, (ax1, ax2) = plt.subplots(1, 2)
@@ -192,20 +184,27 @@ if __name__ == '__main__':
     # Plot the mlp norm loss in the second subplot
     ax2.semilogy(mlp.loss_val_norm, label='validation', marker=None)
     ax2.semilogy(mlp.loss_train_norm, label='training', marker=None)
-    ax2.semilogy(mlp.loss_analytic_norm, label='analytic test', marker=None)
+    ax2.semilogy(mlp.loss_analytic_norm, label='analytic', marker=None)
     ax2.legend(loc="upper right")
-    ax2.set_title("Test and train relative error")
+    ax2.set_title("train, validation and analytic relative error")
     ax2.set_xlabel("Epoch")
     ax2.grid(True)
 
+
     #save the image
     plt.show()
-    plt.savefig('./lossCantilever.png')
+    plt.savefig('./lossUniaxial.png')
 
-    # Print the final losses 
-    print('Train loss: ', mlp.loss[-1])
-    print('Train loss norm: ', mlp.loss_train_norm[-1])
-    print('Validation loss norm: ', mlp.loss_val_norm[-1])
-    print('Test loss: ', mlp.loss_analytic_norm[-1])
+
+    # Compute the error versus the NN and ONSAS solution for an outlier (most flexible case).
+    pred = mlp(torch.tensor([[2.9, 0.5, 2.9]], dtype=torch.float)).detach().numpy()
+    ux, uy, uz = compute_analytic_solution(2.9, 1.0, 1.0, 0.5, 0.3, 2.9)
+    print('NN solution: ', pred)
+    print('Analytic solution: ', ux, uy, uz)
+    error = np.sqrt((pred[0][0]-ux)**2+(pred[0][1]-uy)**2+(pred[0][2]-uz)**2)/np.sqrt(ux**2+uy**2+uz**2)
+    print('Error: ', error)
+    #relative error
+    
+
 
     pass
