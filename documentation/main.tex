@@ -23,6 +23,10 @@
 
 \usepackage{graphicx} % for including images
 \usepackage{subcaption} % for creating subfigures
+\usepackage{color}
+
+
+
 
 \input{structure.tex} % Include the file specifying the document structure and custom commands
 
@@ -74,22 +78,21 @@ The simulated uniaxial problem can be seen in Figure \ref{fig:uniaxial_model}. L
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}[b]{0.48\textwidth}
-	\centering
-	\includegraphics[width=\textwidth]{Figures/swallow.jpg}
-	\caption{System before deformation.}
+	\def\svgwidth{\textwidth}
+	\input{Figures/Example1.pdf_tex}
+	\caption{Reference configuration sketch.}
 	%\label{fig:image1}
 	\end{subfigure}
 	\hfill
 	\begin{subfigure}[b]{0.48\textwidth}
 	\centering
-	\includegraphics[width=\textwidth]{Figures/swallow.jpg}
+		\includegraphics[width=\textwidth]{Figures/Example1.png}
 	\caption{System with an applied load.}
 	%\label{fig:image2}
 	\end{subfigure}
 	\caption{Uniaxial problem simulated and solved in ONSAS.m.}
 	\label{fig:uniaxial_model}
-	\end{figure}
-
+\end{figure}
 
 
 \subsection{Composed Cantilever Model}
@@ -98,21 +101,21 @@ The uniaxial model was extended to a composed cantilever model, which consisted 
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}[b]{0.48\textwidth}
-	\centering
-	\includegraphics[width=\textwidth]{Figures/swallow.jpg}
-	\caption{System before deformation.}
+	\def\svgwidth{\textwidth}
+	\input{Figures/Example2.pdf_tex}
+	\caption{Reference configuration sketch.}
 	%\label{fig:image1}
 	\end{subfigure}
 	\hfill
 	\begin{subfigure}[b]{0.48\textwidth}
 	\centering
-	\includegraphics[width=\textwidth]{Figures/swallow.jpg}
+	\includegraphics[width=\textwidth]{Figures/Ejemplo2.png}
 	\caption{System with an applied load.}
 	%\label{fig:image2}
 	\end{subfigure}
 	\caption{Composed cantilever problem simulated and solved in ONSAS.m.}
 	\label{fig:composed_cantilever_model}
-	\end{figure}
+\end{figure}
 
 
 \subsection{Bash Script}
