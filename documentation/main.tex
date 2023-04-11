@@ -70,9 +70,9 @@ This documentation report will describe the methodology used to develop the neur
 In this section, we describe the pipeline we developed to generate the dataset of FEM solutions and train the neural network. We used a uniaxial model with the ONSAS.m FEM solver, which we automated with a bash script. The resulting dataset was preprocessed and used to train a multi-layer perceptron (MLP) implemented in PyTorch.
 
 \subsection{Uniaxial Model}
-Our model consisted of a uniaxial mechanical problem in which a load was applied to a bar, causing it to deform. We used the ONSAS.m FEM solver to simulate the deformation and generate a dataset of solutions. The uniaxial model was chosen for its simplicity and as a starting point for more complex models.
+Our model consisted of a uniaxial mechanical problem in which a load was applied to a three-dimensional bar, causing it to deform. We used the ONSAS.m FEM solver to simulate the deformation and generate a dataset of solutions. The uniaxial model was chosen for its simplicity and as a starting point for more complex models.
 
-The simulated uniaxial problem can be seen in Figure \ref{fig:uniaxial_model}. Loads are applied to the bar at the left and right ends, causing it to deform. The bar is constrained to move only in the x-direction, so the deformation is uniaxial ...
+The simulated uniaxial problem can be seen in Figure \ref{fig:uniaxial_model}. Loads are applied to the bar at the right end, causing it to deform. The bar is constrained to to mantain the lefmost face (Figure \ref{fig:uniaxial_model}) in the y-z plane, and the origin fixed, thus the deformation is uniaxial.
 
 %placeholder two images side by side for the uniaxial model
 \begin{figure}[h]
@@ -147,10 +147,13 @@ The relative MSE is more useful for comparing the performance of different model
 
 \subsection{Analytic Solution}
 To compare the performance of our neural network to the FEM, we computed the analytic solution to the uniaxial problem. The analytic solution is given by:
+
 \begin{equation}
 \label{eq:analytic_solution}
-u = \frac{pL_x^3}{3E}
+u = \textcolor{red}{\hdots}%\frac{pL_x^3}{3E}
 \end{equation}
+
+
 where $u$ is the displacement of the center point of the prism's face, $p$ is the applied load, $L_x$ is the length of the bar, and $E$ is the elastic modulus of the material.
 
 This allows us to generate a dataset of analytic solutions, which we can use to compare the performance of the neural network to the FEM. For doing so we used lhs to generate a Latin Hypercube Sampling of the input variables, and then computed the analytic solution for each of the 200 points in the sample.
@@ -160,19 +163,19 @@ This allows us to generate a dataset of analytic solutions, which we can use to 
 In this section, we present the results of our experiments. We compare the performance of our neural network to the FEM, and evaluate its effectiveness on a uniaxial problem and a composed cantilever problem.
 
 \subsection{Training, validation and test losses}
-The training, validation and  loss of our neural network on the uniaxial compression/extension dataset is shown in Figure \ref{fig:train_loss}. As we can see, the training loss decreases rapidly during the first few epochs and then levels off. The final training loss is xxxx, indicating that the network has learned the underlying mechanical problem well.
+The training, validation and  loss of our neural network on the uniaxial compression/extension dataset is shown in Figure \ref{fig:train_loss}. As we can see, the training loss decreases rapidly during the first few epochs and then levels off. The final training loss is \textcolor{red}{xxxx}, indicating that the network has learned the underlying mechanical problem well.
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.6\textwidth]{Figures/swallow.jpg}
+\includegraphics[width=0.9\textwidth]{Figures/MSE.png}
 \caption{Training, validation and test loss of the neural network on the uniaxial compression/extension dataset.}
 \label{fig:train_loss}
 \end{figure}
 
-\subsection{Comparison with Theoretical Curve and }
-To further evaluate the accuracy of our neural network, we compared its predictions to the analytic solution for an input point outside of the training set. The conditions chosen for this comparison were $L_x = 1$, $p = 1$, and $E = 1$. The expected displacement of the center point of the prism's face is $u = 0.1667$, and the neural network predicted $u = 0.1667$, which amounts to an error of 0.0001. This is a very small error, indicating that the neural network is able to accurately predict the displacement of the center point of the prism's face.
+\subsection{Comparison with Theoretical Curve and extrapolation}
+To further evaluate the accuracy of our neural network, we compared its predictions to the analytic solution for an input point outside of the training set. \textcolor{red}{The conditions chosen for this comparison were $L_x = 1$, $p = 1$, and $E = 1$. The expected displacement of the center point of the prism's face is $u = 0.1667$, and the neural network predicted $u = 0.1667$, which amounts to an error of 0.0001. This is a very small error, indicating that the neural network is able to accurately predict the displacement of the center point of the prism's face.}
 \subsection{Evaluation on Cantilever Model}
-For the case of the composed cantilever model, the training, validation and test loss is shown in Figure \ref{fig:composed_cantilever_loss}. As we can see, the training loss decreases rapidly during the first few epochs and then levels off. The final training loss is xxxx, indicating that the network has learned the underlying mechanical problem well.
+For the case of the composed cantilever model, the training, validation and test loss is shown in Figure \ref{fig:composed_cantilever_loss}. As we can see, the training loss decreases rapidly during the first few epochs and then levels off. The final training loss is \textcolor{red}{xxxx}, indicating that the network has learned the underlying mechanical problem well.
 
 \begin{figure}[h]
 \centering
