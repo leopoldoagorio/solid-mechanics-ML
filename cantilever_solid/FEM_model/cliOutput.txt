@@ -1,0 +1,26 @@
+lateral_load = 0.010000
+
+|=================================================|
+|         _ _             _ _     _ _     _ _     |
+|       /    /  /|   /  /       /    /  /         |
+|      /    /  / |  /  /_ _    /_ _ /  /_ _       |
+|     /    /  /  | /       /  /    /       /      |
+|    /_ _ /  /   |/   _ _ /  /    /   _ _ /       |
+|                                                 |
+|-------------------------------------------------|
+| Welcome to ONSAS v0.2.7.                        |
+| This program comes with ABSOLUTELY NO WARRANTY. |
+| Please read the COPYING.txt and README.md files |
+|-------------------------------------------------|
+| Solving problem:  cantilever_solid
+|  - Cleaning output directory ... done. 
+|                                                 |
+| Analysis progress:   |0       50       100| %   |
+|                      |====================non convergence at step |     |
+| Time:   91.6 sec                                |
+|                                                 |
+| Iters:  avg  max | Stop by: force  disp  iters  |
+|        15.2  100 |             19     0      1  |
+|  - writing report file ...  done.               |
+|=================================================|
+plotBool = 0
