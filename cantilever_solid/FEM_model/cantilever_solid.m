@@ -116,8 +116,9 @@ function [matUs,loadFactorsMat] = cantilever_solid(Lx,Ly,Lz,E1,nu1,E2,nu2,p)
   %md### Analysis parameters
   %md
   analysisSettings.methodName    = 'newtonRaphson' ;
-  analysisSettings.stopTolIts    = 50     ;
+  analysisSettings.stopTolIts    = 100     ;
   analysisSettings.stopTolForces = 1.0e-8 ;
+  analysisSettings.stopTolDeltau = 1.0e-8 ;
   analysisSettings.finalTime     = 1      ;
   analysisSettings.deltaT        = .05    ;
   %md
