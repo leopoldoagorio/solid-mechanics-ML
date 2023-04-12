@@ -245,6 +245,6 @@ if __name__ == '__main__':
 
     #save the image
     plt.show()
-    plt.savefig('./uniaxial_compression/lossUniaxial.jpg')
+    # plt.savefig('./uniaxial_compression/lossUniaxial.jpg')
 
     pass

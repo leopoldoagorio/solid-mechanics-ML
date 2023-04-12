@@ -24,6 +24,7 @@
 \usepackage{graphicx} % for including images
 \usepackage{subcaption} % for creating subfigures
 \usepackage{color}
+\usepackage{hyperref}
 
 
 
@@ -104,7 +105,7 @@ The uniaxial model was extended to a composed cantilever model, which consisted 
 	\def\svgwidth{\textwidth}
 	\input{Figures/Example2.pdf_tex}
 	\caption{Reference configuration sketch.}
-	%\label{fig:image1}
+	\label{fig:ex1_ilus}
 	\end{subfigure}
 	\hfill
 	\begin{subfigure}[b]{0.48\textwidth}
@@ -141,7 +142,7 @@ MSE = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2
 where $y_i$ is the true value and $\hat{y}_i$ is the predicted value. The relative MSE is defined as:
 \begin{equation}
 \label{eq:RMSE}
-RMSE = \frac{1}{n} \sum_{i=1}^{n} \frac{(y_i - \hat{y}_i)^2}{y_i}
+RMSE = \frac{1}{n} \sum_{i=1}^{n} \frac{||y_i - \hat{y}_i||_2^2}{||y_i||_2^2}
 \end{equation}
 The relative MSE is more useful for comparing the performance of different models, since it is normalized by the true value.
 
@@ -150,11 +151,29 @@ To compare the performance of our neural network to the FEM, we computed the ana
 
 \begin{equation}
 \label{eq:analytic_solution}
-u = \textcolor{red}{\hdots}%\frac{pL_x^3}{3E}
+\boldsymbol{u} = 
+(\alpha - 1)L_x \boldsymbol{e}_1 
++   
+(\beta - 1) \frac{L_y}{2}  \boldsymbol{e}_2 
++   
+(\beta - 1)\frac{L_z}{2} \boldsymbol{e}_3 
 \end{equation}
 
+where $\boldsymbol{u}$ is the displacement of the center point of the prism's face, $L_x$, $L_y$ and $L_z$ are the dimensions of the solid as it is shown in Figure \ref{fig:ex1_ilus}. The values of $\alpha$ and $\beta$ are obtained solving the following pair of non-linear equations:
+%
+\begin{eqnarray}
+\alpha \left( 
+\mu -  \frac{\mu}{\alpha^2} + \frac{K\beta^2}{\alpha} (\beta^2 \alpha -1)  
+\right) &=& - p \\
+ %
+\beta \left( 
+	\mu -  \frac{\mu}{\beta^2} + K (\alpha^2\beta^2 - \alpha) 
+ \right) &=& 0
+\end{eqnarray}
+%
+where  $p$ is the applied load, $K = \frac{E}{3(1 - 2\nu)}$ is the Bulk modulus and $\mu = \frac{E}{2(1 + \nu)}$ is the second Lamé parameter, $E$ is the elastic modulus and $\nu$ is the Poission's ratio. 
 
-where $u$ is the displacement of the center point of the prism's face, $p$ is the applied load, $L_x$ is the length of the bar, and $E$ is the elastic modulus of the material.
+
 
 This allows us to generate a dataset of analytic solutions, which we can use to compare the performance of the neural network to the FEM. For doing so we used lhs to generate a Latin Hypercube Sampling of the input variables, and then computed the analytic solution for each of the 200 points in the sample.
 
@@ -165,24 +184,50 @@ In this section, we present the results of our experiments. We compare the perfo
 \subsection{Training, validation and test losses}
 The training, validation and  loss of our neural network on the uniaxial compression/extension dataset is shown in Figure \ref{fig:train_loss}. As we can see, the training loss decreases rapidly during the first few epochs and then levels off. The final training loss is \textcolor{red}{xxxx}, indicating that the network has learned the underlying mechanical problem well.
 
+
+\begin{itemize}
+\item Final training loss MSE 0.000529  
+\item  Final training loss RMSE 0.000002  
+\item Final validation loss RMSE 0.000002  
+\item  Final analytic loss RMSE 0.000017  
+\item RMSE extrapolation error for (Lx, E, p) = (4.00, 0.50, 3.50): is 0.067281
+\item MSE extrapolation error for (Lx, E, p) = (4.00, 0.50, 3.50): is 0.946485 m$^2$
+\end{itemize}
+
+
+
+
+
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.9\textwidth]{Figures/MSE.png}
+\includegraphics[width=1\textwidth]{Figures/Example1_losses.png}
 \caption{Training, validation and test loss of the neural network on the uniaxial compression/extension dataset.}
 \label{fig:train_loss}
 \end{figure}
 
 \subsection{Comparison with Theoretical Curve and extrapolation}
 To further evaluate the accuracy of our neural network, we compared its predictions to the analytic solution for an input point outside of the training set. \textcolor{red}{The conditions chosen for this comparison were $L_x = 1$, $p = 1$, and $E = 1$. The expected displacement of the center point of the prism's face is $u = 0.1667$, and the neural network predicted $u = 0.1667$, which amounts to an error of 0.0001. This is a very small error, indicating that the neural network is able to accurately predict the displacement of the center point of the prism's face.}
+
 \subsection{Evaluation on Cantilever Model}
 For the case of the composed cantilever model, the training, validation and test loss is shown in Figure \ref{fig:composed_cantilever_loss}. As we can see, the training loss decreases rapidly during the first few epochs and then levels off. The final training loss is \textcolor{red}{xxxx}, indicating that the network has learned the underlying mechanical problem well.
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.6\textwidth]{Figures/swallow.jpg}
+\includegraphics[width=1\textwidth]{Figures/Example2_losses.png}
 \caption{Training, validation and test loss of the neural network on the composed cantilever dataset.}
 \label{fig:composed_cantilever_loss}
 \end{figure}
+
+
+\begin{itemize}
+\item Final training loss MSE 0.002276  
+\item Final training loss RMSE 0.000243  
+\item Final validation loss RMSE 0.000254  
+\item Final test loss RMSE 0.000287  
+\item RMSE extrapolation error for (Lx, E1, E2, p) = (1.50, 1.20, 1.20, 0.16): is 0.672594
+\end{itemize}
+
+
 
 \section{Conclusion}
 In this project, we developed a pipeline for generating a dataset of FEM solutions to unidimensional compression/extension problems, and used this dataset to train a neural network to solve the same mechanical problem more quickly. Our experiments showed that our approach was effective, with the neural network achieving low losses on both the training and test datasets, and closely matching the theoretical curve for uniaxial compression/extension. We also demonstrated that our approach has the potential to be extended to more complex mechanical problems, as shown by our evaluation on a cantilever model. Overall, this project has the potential to significantly improve the efficiency of solving unidimensional mechanical problems, with broader implications for the engineering design process.
