@@ -10,7 +10,7 @@ remember the csv structure was: echo "$Lx,$Ly,$Lz, $E, $nu, $p,$Ux,$Uy,$Uz" >> "
 where Lx, Ly, Lz are the block's length, E and nu are material parameter,  p is the input pressure
  and Ux, Uy, Uz are the output compression """
 
- 
+# Import libraries 
 import torch
 from torch.utils.data import Dataset, DataLoader, TensorDataset
 import pandas as pd
@@ -154,6 +154,9 @@ if __name__ == '__main__':
     # Loading the data
     dataset = uniCompDataset('./uniaxial_compression/data/data.csv')#uniCompDataset('./../data/data.csv')
 
+    # Set a seed for reproducibility
+    torch.manual_seed(0)
+
     # Splitting the data into training and validation sets
     frac_train = 0.5
     train_size = int(frac_train * len(dataset))
@@ -167,44 +170,65 @@ if __name__ == '__main__':
 
     # Defining the model
     mlp = MLP()
+
+    # Training the model
     mlp.train(train_loader, val_loader=val_loader, num_epochs=100, analytic = True) 
 
+    # Print final losses
+    print("Final training loss MSE %.6f  " % (mlp.loss[-1]))
+    print("Final training loss RMSE %.6f  " % (mlp.loss_train_norm[-1]))
+    print("Final validation loss RMSE %.6f  " % (mlp.loss_val_norm[-1]))
+    print("Final analytic loss RMSE %.6f  " % (mlp.loss_analytic_norm[-1]))
+
+    # Compute the extrapolation error
+    Lx_extra, E_extra, p_extra = (4, 0.5, 3.5)
+    # Ground truth
+    ux_extra_gt, uy_extra_gt, uz_extra_gt = compute_analytic_solution(Lx_extra, 1.0, 1.0, E_extra, 0.3, p_extra)    
+    u_pred = mlp(torch.tensor([[Lx_extra, E_extra, p_extra]], dtype=torch.float)).detach().numpy()
+    dif = np.array((u_pred[0][0]-ux_extra_gt, u_pred[0][1]-uy_extra_gt, u_pred[0][2]-uz_extra_gt))
+    # Compute errors    
+    MSE_extra = np.linalg.norm(dif)**2
+    RMSE_extra = MSE_extra / np.linalg.norm(np.array((ux_extra_gt, uy_extra_gt, uz_extra_gt)))**2
+    
+    # Plot in screen the error for Lx_extra E_extra p_extra
+    print(
+        "RMSE extrapolation error for (Lx, E, p) = (%.2f, %.2f, %.2f): is %.6f" % 
+        (Lx_extra, E_extra, p_extra, RMSE_extra)
+    )
+
+    print(
+        "MSE extrapolation error for (Lx, E, p) = (%.2f, %.2f, %.2f): is %.6f" % 
+        (Lx_extra, E_extra, p_extra, MSE_extra)
+    )
+    
     ## Plotting the loss
+    # Plot params
+    color_training = 'tab:blue'
+    linestyle_training = '--'
+    color_validation = 'tab:orange'
+    color_analytic = 'tab:green'
+
     # Make a subplot with mlp.loss and mlp.loss_val_norm
     fig, (ax1, ax2) = plt.subplots(1, 2)
     plt.style.use("seaborn-v0_8")
-
     # Plot the mlp.loss in the first subplot
-    ax1.semilogy(mlp.loss, label='training', marker=None)
-    ax1.set_title("Training Loss MSE")
+    ax1.semilogy(mlp.loss, label='training', marker=None, color=color_training, linestyle=linestyle_training)
     ax1.legend(loc="upper right")
     ax1.set_xlabel("Epoch")
+    ax1.set_ylabel("MSE")
     ax1.grid(True)
     
     # Plot the mlp norm loss in the second subplot
-    ax2.semilogy(mlp.loss_val_norm, label='validation', marker=None)
-    ax2.semilogy(mlp.loss_train_norm, label='training', marker=None)
-    ax2.semilogy(mlp.loss_analytic_norm, label='analytic', marker=None)
+    ax2.semilogy(mlp.loss_val_norm, label='validation', marker=None, color = color_validation)
+    ax2.semilogy(mlp.loss_train_norm, label='training', marker=None, color = color_training, linestyle=linestyle_training)
+    ax2.semilogy(mlp.loss_analytic_norm, label='analytic', marker=None, color= color_analytic)
     ax2.legend(loc="upper right")
-    ax2.set_title("train, validation and analytic relative error")
     ax2.set_xlabel("Epoch")
+    ax2.set_ylabel("RMSE")
     ax2.grid(True)
-
 
     #save the image
     plt.show()
-    plt.savefig('./lossUniaxial.png')
-
-
-    # Compute the error versus the NN and ONSAS solution for an outlier (most flexible case).
-    pred = mlp(torch.tensor([[2.9, 0.5, 2.9]], dtype=torch.float)).detach().numpy()
-    ux, uy, uz = compute_analytic_solution(2.9, 1.0, 1.0, 0.5, 0.3, 2.9)
-    print('NN solution: ', pred)
-    print('Analytic solution: ', ux, uy, uz)
-    error = np.sqrt((pred[0][0]-ux)**2+(pred[0][1]-uy)**2+(pred[0][2]-uz)**2)/np.sqrt(ux**2+uy**2+uz**2)
-    print('Error: ', error)
-    #relative error
-    
-
+    plt.savefig('./lossUniaxial.jpg')
 
     pass
