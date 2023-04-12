@@ -2,7 +2,7 @@
 __author__ = "Leopoldo Agorio and Mauricio Vanzulli"
 __email__ = "lagorio@fing.edu.uy  mvanzulli@fing.edy.uy"
 __status__ = "Development"
-__date__ = "02/23"
+__date__ = "04/23"
 """
 
 """Loading the csv with torch's data loader and using it for batch training
@@ -63,6 +63,21 @@ class MLP(nn.Module):
         return self.layers(x)
 
     def train(self, train_loader, val_loader, optimizer=None, criterion=None, num_epochs=2000, analytic=False,verbose=False):
+        """
+        Trains a neural network model.
+
+        Args:
+            train_loader (DataLoader): The data used for training.
+            val_loader (DataLoader): The validation data.
+            optimizer (Optimizer, optional): The optimizer used for training. If None, defaults to self.optimizer.
+            criterion (Loss function, optional): The loss function used for training. If None, defaults to self.criterion.
+            num_epochs (int, optional): The number of epochs for training. Defaults to 2000.
+            analytic (bool, optional): A flag to indicate whether to compute an additional analytic loss. Defaults to False.
+            verbose (bool, optional): A flag to indicate whether to print updates during training. Defaults to False.
+
+        Returns:
+            Tuple: Computed train, validation and analytic loss (if `analytic=True`) as arrays.
+        """
         if optimizer is None:
             optimizer = self.optimizer
         if criterion is None:
@@ -85,8 +100,8 @@ class MLP(nn.Module):
                 train_loss += loss.item()
 
             train_loss /= len(train_loader)
-            val_loss_norm = self.val(val_loader, criterion)
-            train_loss_norm = self.val(train_loader, criterion)
+            val_loss_norm = self.val(val_loader)
+            train_loss_norm = self.val(train_loader)
             if(analytic==False and verbose):
                 tqdm.write(f"Epoch: {epoch}, Train Loss: {train_loss}, Val Loss: {val_loss}")
 
@@ -99,11 +114,12 @@ class MLP(nn.Module):
                 if(verbose):
                     tqdm.write(f"Epoch: {epoch}, Train Loss: {train_loss}, Val Loss norm: {val_loss_norm}, Analytic Loss: {self.loss_analytic_norm[-1]}")
 
-    def val(self, val_loader, criterion):
+    """Computes the RMSE loss on a generic dataset """    
+    def val(self, loader):
         #self.eval()
         val_loss = 0.0
         with torch.no_grad():
-            for data in val_loader:
+            for data in loader:
                 data = data.to(self.device)
                 predicted = self(data[:, [0,3,5]])# input is in data[:, 0,3,5] Lx,E,p
                 ground_truths = data[:, -3:] # ux,uy,uz
@@ -112,7 +128,7 @@ class MLP(nn.Module):
                 norms_ground_truth = torch.norm(ground_truths)**2
                 
                 val_loss += torch.sum(norm_dif/norms_ground_truth).item() /len(predicted)
-        val_loss /= len(val_loader)
+        val_loss /= len(loader)
         return val_loss
 
 def generate_test_dataset_lhs(Ly, Lz, nu, samples = 200):
@@ -229,6 +245,6 @@ if __name__ == '__main__':
 
     #save the image
     plt.show()
-    plt.savefig('./lossUniaxial.jpg')
+    plt.savefig('./uniaxial_compression/lossUniaxial.jpg')
 
     pass
