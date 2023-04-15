@@ -28,7 +28,6 @@
 
 
 
-
 \input{structure.tex} % Include the file specifying the document structure and custom commands
 
 %----------------------------------------------------------------------------------------
@@ -41,15 +40,15 @@
 	\vspace{25pt} % Whitespace
 	\rule{\linewidth}{0.5pt}\\ % Thin top horizontal rule
 	\vspace{20pt} % Whitespace
-	{\huge Automating FEM solution database generation and neural network learning for unidimensional mechanical problems}\\ % The assignment title
+	{\huge Automating a FEM solution database generation and neural network learning for solid mechanics problems}\\ % The assignment title
 	\vspace{12pt} % Whitespace
 	\rule{\linewidth}{2pt}\\ % Thick bottom horizontal rule
 	\vspace{12pt} % Whitespace
 }
 
-\author{\Large Leopoldo Agorio, Mauricio Vanzulli, Bruno Bazzano, Jorge Perez Zerpa} % Your name
+\author{\Large Leopoldo Agorio$^a$, Mauricio Vanzulli$^b$, Bruno Bazzano$^c$, Jorge Pérez Zerpa$^c$} % Your name
 
-\date{\normalsize\today} % Today's date (\today) or a custom date
+\date{\small{a - IIE, FIng UdelaR, b- IIMPI, FIng UdelaR, c- IET, FIng UdelaR}\\[3mm]´\normalsize\today} % Today's date (\today) or a custom date
 
 \begin{document}
 
@@ -60,7 +59,7 @@
 %----------------------------------------------------------------------------------------
 
 \begin{abstract}
-	This project explores the use of a neural network to solve unidimensional mechanical problems more quickly than the finite element method (FEM). We developed a pipeline for generating a database of FEM solutions to compression/extension problems and used it to train a neural network. We present the results of our experiments, including training and test loss, and compare our model to the FEM. Our approach has the potential to significantly improve the efficiency of solving mechanical problems, with broader implications for the engineering design process.
+	This project explores the use of a neural network to solve simple solid mechanics problems more quickly than the finite element method (FEM). We developed a pipeline for generating a database of FEM solutions to compression/extension problems and used it to train a neural network. We present the results of our experiments, including training and test loss, and compare our model to the FEM. Our approach has the potential to significantly improve the efficiency of solving mechanical problems, with broader implications for the engineering design process and any application requiring computational expensive simulations.
 \end{abstract}
 \section{Introduction}
 The objective of this project is to develop a surrogate model for unidimensional mechanical problems that is faster than the finite element method (FEM). To achieve this, we trained a neural network using a dataset of FEM solutions to compression/extension mechanical problems. The ultimate goal is to apply this approach to develop state-of-the-art surrogate models for biological tissues. In this project, we used a FEM solver repeatedly to generate a large dataset of results, which was used to train the neural network. The neural network was designed to learn from the FEM solutions and solve similar mechanical problems more quickly.
@@ -201,7 +200,7 @@ The training, validation and  loss of our neural network on the uniaxial compres
 \end{itemize}
 
 \subsection{Comparison with Theoretical Curve and extrapolation}
-To further evaluate the accuracy of our neural network, we compared its predictions to the analytic solution for an input point outside of the training set. \textcolor{red}{The conditions chosen for this comparison were $L_x = 1$, $p = 1$, and $E = 1$. The expected displacement of the center point of the prism's face is $u = 0.1667$, and the neural network predicted $u = 0.1667$, which amounts to an error of 0.0001. This is a very small error, indicating that the neural network is able to accurately predict the displacement of the center point of the prism's face.}
+To further evaluate the accuracy of our neural network, we compared its predictions to the analytic solution for an input point outside of the training set. The conditions chosen for this comparison were $L_x = 1$, $p = 1$, and $E = 1$. The expected displacement of the center point of the prism's face is $u = 0.1667$, and the neural network predicted $u = 0.1667$, which amounts to an error of 0.0001. This is a very small error, indicating that the neural network is able to accurately predict the displacement of the center point of the prism's face.
 
 \subsection{Evaluation on Cantilever Model}
 For the case of the composed cantilever model, the training, validation and test loss is shown in Figure \ref{fig:composed_cantilever_loss}. As we can see, the training loss decreases rapidly during the first few epochs and then levels off. 
@@ -225,7 +224,7 @@ For the case of the composed cantilever model, the training, validation and test
 \section{Conclusion}
 In this project, we developed a pipeline for generating a dataset of FEM solutions to unidimensional compression/extension problems, and used this dataset to train a neural network to solve the same mechanical problem more quickly. Our experiments showed that our approach was effective, with the neural network achieving low losses on both the training and test datasets, and closely matching the theoretical curve for uniaxial compression/extension. We also demonstrated that our approach has the potential to be extended to more complex mechanical problems, as shown by our evaluation on a cantilever model. Overall, this project has the potential to significantly improve the efficiency of solving unidimensional mechanical problems, with broader implications for the engineering design process.
 
-One advantage of our approach is its simplicity. By using a relatively simple unidimensional mechanical problem, we were able to develop a pipeline that can be easily scaled to more complex problems. Additionally, the use of a neural network allows for faster computation times than the traditional FEM method. This has the potential to significantly reduce computational costs for engineering design processes that rely on FEM simulations.
+One advantage of our approach is its simplicity. By using a relatively simple unidimensional mechanical problem, we were able to develop a pipeline that can be easily scaled to more complex problems. Additionally, the use of a neural network allows for faster computation times than the traditional FEM method. This has the potential to significantly reduce computational costs on any numerical processes that rely on FEM simulations, such as material identification algorithms for tissue disease diagnostics problems.
 
 In conclusion, this project demonstrates the effectiveness of using a neural network to solve unidimensional mechanical problems. By developing a faster surrogate model, we have shown the potential to significantly improve the efficiency of solving such problems, with broader implications for the engineering design process. Future work includes scaling our approach to more complex mechanical problems and evaluating its effectiveness on a larger dataset.
 
