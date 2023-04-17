@@ -27,7 +27,6 @@
 \usepackage{hyperref}
 
 
-
 \input{structure.tex} % Include the file specifying the document structure and custom commands
 
 %----------------------------------------------------------------------------------------
@@ -67,14 +66,13 @@ The objective of this project is to develop a surrogate model for unidimensional
 This documentation report will describe the methodology used to develop the neural network, the performance of the model compared to the FEM, and potential future directions for this project. By developing a faster surrogate model, this project's approach has the potential to significantly improve the efficiency of solving unidimensional mechanical problems, with broader implications for the engineering design process.
 
 \section{Methodology}
-In this section, we describe the pipeline we developed to generate the dataset of FEM solutions and train the neural network. We used a uniaxial model with the ONSAS.m FEM solver, which we automated with a bash script. The resulting dataset was preprocessed and used to train a multi-layer perceptron (MLP) implemented in PyTorch.
+In this section, we describe the pipeline we developed to generate the dataset of FEM solutions and train the neural network. We used a simple solid mechanical models with the \texttt{ONSAS.m} FEM solver, which we automated with a bash script. The resulting dataset was preprocessed and used to train a multi-layer perceptron (MLP) implemented in PyTorch.
 
 \subsection{Uniaxial Model}
-Our model consisted of a uniaxial mechanical problem in which a load was applied to a three-dimensional bar, causing it to deform. We used the ONSAS.m FEM solver to simulate the deformation and generate a dataset of solutions. The uniaxial model was chosen for its simplicity and as a starting point for more complex models.
+This model consisted of a uniaxial mechanical problem in which a load was applied to a three-dimensional prism, causing it to deform in three dimensional. The model is uniaxial in the sense that the applied load is along the x-axis. We used the \texttt{ONSAS.m} FEM solver to simulate the deformation and generate a dataset of solutions. The uniaxial model was chosen for its simplicity and as a starting point for more complex models.
 
-The simulated uniaxial problem can be seen in Figure \ref{fig:uniaxial_model}. Loads are applied to the bar at the right end, causing it to deform. The bar is constrained to to mantain the lefmost face (Figure \ref{fig:uniaxial_model}) in the y-z plane, and the origin fixed, thus the deformation is uniaxial.
+The simulated uniaxial problem can be seen in Figure \ref{fig:uniaxial_model}. Loads are applied to the prism at the right end, causing it to deform. The prism is constrained to to mantain the lefmost face (Figure \ref{fig:uniaxial_model}) in the y-z plane, and the origin fixed, thus the deformation is uniaxial.
 
-%placeholder two images side by side for the uniaxial model
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}[b]{0.48\textwidth}
@@ -90,14 +88,14 @@ The simulated uniaxial problem can be seen in Figure \ref{fig:uniaxial_model}. L
 	\caption{System with an applied load.}
 	%\label{fig:image2}
 	\end{subfigure}
-	\caption{Uniaxial problem simulated and solved in ONSAS.m.}
+	\caption{Uniaxial problem simulated and solved in \texttt{ONSAS.m}.}
 	\label{fig:uniaxial_model}
 \end{figure}
 
 
 \subsection{Composed Cantilever Model}
-The uniaxial model was extended to a composed cantilever model, which consisted of a prism with a second prism attached to one end. The prism was constrained to move only in the x-direction, so the deformation was uniaxial. The prism was attached to the bar at the center of its face, as shown in Figure \ref{fig:composed_cantilever_model}.
-%placeholder two images side by side for the composed cantilever model
+Our composed cantilever model consists of two prisms made of different materials, denoted as $1$ and $2$, for which the elastic moduli and Poisson ratios are $E_1, \nu_1$ and $E_2, \nu_2$, respectively. Prism $1$ is fixed by its face at the $x=0$ plane. We applied a load of $(-p_x, t_y, t_z)$ at the plane located at $x=Lx$ along the $x, y$, and $z$ axes, respectively as shown in Figure \ref{fig:composed_cantilever_model}.
+
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}[b]{0.48\textwidth}
@@ -113,20 +111,17 @@ The uniaxial model was extended to a composed cantilever model, which consisted 
 	\caption{System with an applied load.}
 	%\label{fig:image2}
 	\end{subfigure}
-	\caption{Composed cantilever problem simulated and solved in ONSAS.m.}
+	\caption{Composed cantilever problem simulated and solved in \texttt{ONSAS.m}.}
 	\label{fig:composed_cantilever_model}
 \end{figure}
 
 
 \subsection{Bash Script}
-To automate the FEM solver, we developed a bash script that generated the input files for the ONSAS.m solver and executed it repeatedly to generate a large dataset of solutions. The script also handled the output files, extracting the relevant data and formatting into a .csv it for further processing.
+To automate the FEM solver, we developed a bash script that generated the input files for the \texttt{ONSAS.m} solver and executed it repeatedly to generate a large dataset of solutions. The script also handled the output files, extracting the relevant data and formatting into a \texttt{.csv} it for further processing.
 
-The variables sweeped by the script were the length of the bar $L_x$, the applied load $p$, and the elastic modulus of the material $E$. The output of the solver was processed to obtain the displacement of the center point of the prism's face in the three dimensions.  The script generated a total of 18900 data points, which were used to train the neural network.
+The variables swept by the script were the length of the prism $Lx$ (ranging from 1 to 3), the applied load $p$ (ranging from 0.1 to 3), and the elastic modulus of the material $E$ (ranging from 1 to 4). $Ly$ and $Lz$, were fixed at 1, and the Poisson ratio, $\nu$, was fixed at 0.3. The output of the solver was processed to obtain the displacement of the center point of the prism's face in the three dimensions.  The script generated a total of 18900 data points, which were used to train the neural network.
 
-For the case of the composed cantilever model, the variables sweeped were the length of the bar $L_x$, the applied load $p$, and the elastic modulus of each material $E_1$ and $E_2$. The output of the solver was processed to obtain the displacement of the center point of the prism's face in the three dimensions. The script generated a total of 13310 data points, which were used to train the neural network.
-
-%\subsection{Preprocessing}
-%The resulting dataset of FEM solutions was preprocessed to remove duplicates and normalize the input and output data. We split the dataset into training and test sets, using 80\% for training and 20\% for testing.
+For the composed cantilever model, we swept the variables including the length of the prism ($Lx$, ranging from 1 to 2), the applied load ($p$, ranging from 0.05 to 0.14), and the elastic moduli of each material ($E_1$ and $E_2$, ranging from 1.4 to 2.4). Fixed values were $Ly=1$,$Lz=0.5$ and  $\nu_1=\nu_2=0.3$. The output of the solver was processed to obtain the displacement of the center point of the prism's face in the three dimensions. The script generated a total of 13310 data points, which were used to train the neural network.
 
 \subsection{Neural Network}
 We implemented an MLP in PyTorch to learn from the FEM solutions and solve similar mechanical problems more quickly. The MLP had two hidden layers with 20 and 10 neurons, respectively, and used the ReLU activation function. The output layer had three neurons, corresponding to the three dimensions of the displacement of the center point of the prism's face. The optimizer was Adam with a learning rate of 0.001 and 100 epochs were used. 
@@ -180,27 +175,23 @@ This allows us to generate a dataset of analytic solutions, which we can use to 
 \section{Results}
 In this section, we present the results of our experiments. We compare the performance of our neural network to the FEM, and evaluate its effectiveness on a uniaxial problem and a composed cantilever problem.
 
+\subsection{Evaluation for Uniaxial Compression}
+
 \begin{figure}[htpb!]
 	\centering
 	\includegraphics[width=1\textwidth]{Figures/Example1_losses.png}
 	\caption{Training, validation and test loss of the neural network on the uniaxial compression/extension dataset.}
 	\label{fig:train_loss}
 	\end{figure}
-
-\subsection{Training, validation and test losses}
-The training, validation and  loss of our neural network on the uniaxial compression/extension dataset is shown in Figure \ref{fig:train_loss}. As we can see, the training loss decreases rapidly during the first few epochs and then levels off. 
-
-\begin{itemize}
-\item Final training loss MSE 0.000529  
-\item  Final training loss RMSE 0.000002  
-\item Final validation loss RMSE 0.000002  
-\item  Final analytic loss RMSE 0.000017  
-\item RMSE extrapolation error for (Lx, E, p) = (4.00, 0.50, 3.50): is 0.067281
-\item MSE extrapolation error for (Lx, E, p) = (4.00, 0.50, 3.50): is 0.946485 m$^2$
-\end{itemize}
-
-\subsection{Comparison with Theoretical Curve and extrapolation}
-To further evaluate the accuracy of our neural network, we compared its predictions to the analytic solution for an input point outside of the training set. The conditions chosen for this comparison were $L_x = 1$, $p = 1$, and $E = 1$. The expected displacement of the center point of the prism's face is $u = 0.1667$, and the neural network predicted $u = 0.1667$, which amounts to an error of 0.0001. This is a very small error, indicating that the neural network is able to accurately predict the displacement of the center point of the prism's face.
+ 
+Figure \ref{fig:train_loss} shows the training, validation, and test losses of our neural network on the uniaxial compression/extension dataset. The final training loss for MSE is $5.29\times10^{-4}$ and the RMSE is $2\times10^{-6}$. The final validation loss RMSE is $2\times10^{-6}$, and the final analytic loss RMSE is $1.7\times10^{-5}$.
+%\begin{itemize} \item Final training loss MSE 0.000529
+%	\item Final training loss RMSE 0.000002
+%	\item Final validation loss RMSE 0.000002
+%	\item Final analytic loss RMSE 0.000017
+%	\item RMSE extrapolation error for (Lx, E, p) = (4.00, 0.50, 3.50): is 0.067281 \item MSE extrapolation error for (Lx, E, p) = (4.00, 0.50, 3.50): is 0.946485 m$^2$ 
+%\end{itemize}
+We also evaluated the ability of our model to extrapolate beyond the parameters in the training set. When we measured the RMSE extrapolation error for $(Lx, E, p) = (4.00, 0.50, 3.50)$, we found it to be $6.7\times10^{-2}$, while the MSE extrapolation error was $9.5\times10^{-1}$ $m^2$. Since the variation range for the training parameters was $(Lx, E, p) = (1 \hdots 3, 1 \hdots 4, .1 \hdots 3)$, these results show that our neural network was able to extrapolate to a point that was not in the training set, with an error of 6.7 of the true value.
 
 \subsection{Evaluation on Cantilever Model}
 For the case of the composed cantilever model, the training, validation and test loss is shown in Figure \ref{fig:composed_cantilever_loss}. As we can see, the training loss decreases rapidly during the first few epochs and then levels off. 
@@ -213,19 +204,24 @@ For the case of the composed cantilever model, the training, validation and test
 \end{figure}
 
 
-\begin{itemize}
-\item Final training loss MSE 0.002276  
-\item Final training loss RMSE 0.000243  
-\item Final validation loss RMSE 0.000254  
-\item Final test loss RMSE 0.000287  
-\item RMSE extrapolation error for (Lx, E1, E2, p) = (1.50, 1.20, 1.20, 0.16): is 0.672594
-\end{itemize}
+Figure \ref{fig:composed_cantilever_loss} shows the training, validation, and test losses of our neural network on the cantilever model. The final training loss for MSE is $2.3\times10^{-3}$ and the RMSE is $2.4\times10^{-4}$. The final validation loss RMSE is $2.5\times10^{-4}$, and the final analytic loss RMSE is $2.9\times10^{-4}$.
+
+We also evaluated the ability of our model to extrapolate beyond the parameters in the training set. When we measured the RMSE extrapolation error for $(Lx, E1, E2, p) = (1.50, 1.3, 1.3, 0.10)$, we found it to be $0.21$. Since the variation range for the training parameters was $(Lx, E1, E2, p) = (1 \hdots 2, 1.4 \hdots 2.4, 1.4 \hdots 2.4, 0.05 \hdots 0.14)$, these results show that our neural network was able to extrapolate to a point that was not in the training set, with an error of $21 \%$ of the true value. 
+%$6.7\times10^{-2}$, while the MSE extrapolation error was $9.5\times10^{-1}$ $m^2$. Since the variation range for the training parameters was $(Lx, E, p) = (1 \hdots 3, 1 \hdots 4, .1 \hdots 3)$, these results show that our neural network was able to extrapolate to a point that was not in the training set, with an error of 6.7 of the true value.
+
+%\begin{itemize}
+%\item Final training loss MSE 0.002276  
+%\item Final training loss RMSE 0.000243  
+%\item Final validation loss RMSE 0.000254  
+%\item Final test loss RMSE 0.000287  
+%\item RMSE extrapolation error for (Lx, E1, E2, p) = (1.50, 1.20, 1.20, 0.16): is 0.672594
+%\end{itemize}
 
 \section{Conclusion}
-In this project, we developed a pipeline for generating a dataset of FEM solutions to unidimensional compression/extension problems, and used this dataset to train a neural network to solve the same mechanical problem more quickly. Our experiments showed that our approach was effective, with the neural network achieving low losses on both the training and test datasets, and closely matching the theoretical curve for uniaxial compression/extension. We also demonstrated that our approach has the potential to be extended to more complex mechanical problems, as shown by our evaluation on a cantilever model. Overall, this project has the potential to significantly improve the efficiency of solving unidimensional mechanical problems, with broader implications for the engineering design process.
+In this project, we developed a pipeline for generating a dataset of FEM solutions to simple solid mechanical problems, and used this dataset to train a neural network to solve the same problems more quickly. Our experiments showed that our approach was effective, with the neural network achieving low losses on both the training and test datasets, and closely matching the theoretical curve for uniaxial compression. We also demonstrated that our approach has the potential to be extended to more complex mechanical problems, as shown by our evaluation on a cantilever model. 
 
-One advantage of our approach is its simplicity. By using a relatively simple unidimensional mechanical problem, we were able to develop a pipeline that can be easily scaled to more complex problems. Additionally, the use of a neural network allows for faster computation times than the traditional FEM method. This has the potential to significantly reduce computational costs on any numerical processes that rely on FEM simulations, such as material identification algorithms for tissue disease diagnostics problems.
+One advantage of our implementation is its simplicity and scalability. By using a relatively simple mechanical problem, we were able to develop a pipeline that can be easily scaled to more complex problems. Additionally, the use of a neural network allows for faster computation times than the traditional FEM method. This has the potential to significantly reduce computational costs on any numerical processes that rely on FEM simulations, such as material identification algorithms for tissue disease diagnostics problems and stress CAD for manufacturing.
 
-In conclusion, this project demonstrates the effectiveness of using a neural network to solve unidimensional mechanical problems. By developing a faster surrogate model, we have shown the potential to significantly improve the efficiency of solving such problems, with broader implications for the engineering design process. Future work includes scaling our approach to more complex mechanical problems and evaluating its effectiveness on a larger dataset.
+In conclusion, this project demonstrates the effectiveness of using a neural network to solve simple mechanical problems. By developing a faster surrogate model, we have shown the potential to significantly improve the efficiency of solving such problems, with broader implications for the engineering design process. Future work includes scaling our approach to more complex mechanical problems and evaluating its effectiveness on a larger dataset.
 
 \end{document}
