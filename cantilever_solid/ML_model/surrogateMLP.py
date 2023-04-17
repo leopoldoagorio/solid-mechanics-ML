@@ -162,7 +162,7 @@ if __name__ == '__main__':
     # Compute the extrapolation error
     # This is the most flexible case that ONSAS.m can solve with the parameters
     # defined in the input
-    Lx_extra, E1_extra, E2_extra, p_extra = (1.5, 1.2, 1.2, 0.16)
+    Lx_extra, E1_extra, E2_extra, p_extra = (1.5, 1.3, 1.3, 0.10)
 
     # Set input values as strings
     Lx = str(Lx_extra)
