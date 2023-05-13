@@ -4,89 +4,40 @@
 \usepackage{amsmath,amsfonts}
 \usepackage[utf8]{inputenc}
 %
-\title{INSTRUCTIONS TO PREPARE AN ARTICLE ACCORDING TO THE AMCA-STYLE}
+\title{Automating a FEM solution database generation and neural network learning for solid mechanics problems}
 
 
-\author[a,b]{First A. Author}
-\author[b]{Second B. Author}
-\author[b]{Third C. Author}
-\author[a]{Fourth D. Author}
+\author[a]{L.C. Agorio}
+\author[b]{M.C. Vanzulli}
+\author[c]{B. Bazzano}
+\author[c]{Jorge M. Pérez Zerpa}
 %
-\affil[a]{Grupo de Mecánica Computacional,
-Universidad Nacional de Villa Carolina,
-Los Alerces 3492, 4200~Villa Carolina, Argentina,
-gmc@uncarolina.edu.ar, \url{http://www.uncarolina.edu.ar/gmc}}
-%
-\affil[b]{Grupo de Ingeniería Aplicada,
-Universidad Nacional de La Meseta,
-Los Cipreses 3493, 4201~La Meseta, Argentina,
-gia@unmeseta.edu.ar, \url{http://www.unmeseta.edu.ar/gia}}
+\affil[a]{Instituto de Ingeniería Eléctrica, Facultad de Ingeniería, Universidad de la República, Montevideo, Uruguay}
 
-%% NOTE: IF ALL AUTHORS BELONG TO THE SAME AFFILIATION
-%% USE THE `\voidaffil' MACRO FOR THE AFFILIATION CODE.
-%% Example:
-%% \author[\voidaffil]{First A. Author}
-%% \author[\voidaffil]{Second B. Author}
-%% \author[\voidaffil]{Third C. Author}
-%% \author[\voidaffil]{Fourth D. Author}
-%% %
-%% \affil[\voidaffil]{Grupo de Mec\'anica Computacional,
-%% Universidad Nacional de Villa Carolina,
-%% Los Alerces 3492, 4200 Villa Carolina, Argentina,
-%% gmc@uncarolina.edu.ar, http://www.uncarolina.edu.ar/gmc}
+\affil[b]{Instituto de Ingeniería Mecánica y Producción Industrial, Facultad de Ingeniería, Universidad de la República, Montevideo, Uruguay}
+%
+\affil[c]{Instituto de Estructuras y Transporte, Facultad de Ingeniería, Universidad de la República, Montevideo, Uruguay}
 
 \begin{document}
 \vspace{3cm}
 
 \maketitle
 
-%% To set PDF METADATA: uncomment and replace fields in
-%% UPPERCASE with appropriate values.
-%%
-%% \hypersetup{
-%%   pdfauthor={AUTHORS},
-%%   pdfkeywords={KEYWORDS},
-%%   pdftitle={TITLE}
-%% }
-%%
-%% For instance
-%% \hypersetup{
-%%   pdfauthor={Sponge B. and Star P.},
-%%   pdfkeywords={multiphase flow, air-liquid mixtures},
-%%   pdftitle={A new model for multi-phase flow}
-%% }
-%%
-%% NOTE: To set the metadata is recommended but not absolutely
-%% neccesary.
-%% This was done before with the \pdfinfo command,
-%% but according to this post:
-%% http://de.nntp2http.com/comp/text/tex/2008/12/5358fd061de9703a781885a5dcf98364.html
-%% if `hyperref' is used, then you must use \hypersetup{} not \pdfinfo{}
-
 \begin{keywords}
-Instructions, AMCA style, Computational Mechanics, article.
+Artificial Neural Networks, Finite Element Method, Solid Mechanics, Surrogate-models.
 \end{keywords}
 
 \begin{abstract}
 
-300 words
+    % motivation
+    Solving finite element simulations can be computationally expensive, particularly in solid mechanics field. This is a challenge in applications such as biomechanics and manufacturing design process, where the same problem may need to be solved in real time for different configurations or input data. 
+    % scope 
+    In this paper we combined Finite Element Method (FEM) and Artificial Neural Networks (ANN) to improve the speed and efficiency of solving mechanical problems. A pipeline to generate databases of FEM solutions was developed interacting with an in-house Open Source Software for non-linear Analysis of Structures (ONSAS). The databases were used to train a neural network that takes geometrical and material properties as inputs, and as an output predicts the displacements solution of the mechanical problem.
+    % results de los ejemplos d
+    Our experiments showed that the proposed approach was effective, achieving low losses on both the training and test datasets. We present a validation example where the ANN was capable to match the analytic solution with great accuracy. Moreover, more complex problems were solved with different geometries, boundary conditions and materials considering large strain deformations.
+    % conlcusion limitations and future work
+    One advantage of our implementation is its simplicity and scalability. We were able to develop a pipeline that can be easily scaled to a wide range of mechanical problems. Additionally, the use of ANN allows a faster computation times than the traditional solvers using the FEM method. Finally, we present a discussion about the limitations of the proposed approach and future work.
 
-Solving finite element simulations can be computationally expensive, particularly in solid mechanics field. This is a challenge in applications such as biomechanics and the design process, where the same problem may need to be solved in real time for different configurations or input data. In this paper we combined finite element analysis (FEA) and neural networks (NN)  to improve the speed and efficiency of solving mechanical problems. A pipeline to generate databases of FEM solutions was developed interacting with an in-house open source software ONSAS.[85] 
-
-%Results 
-Our experiments showed that our approach was effective, with the neural network achieving low losses on both the training and test datasets, and closely matching the theoretical curve for the first validation example. Moreover, our implementation has the potential to be extended to more complex mechanical problems, as shown by our evaluation on a cantilever model. 
-
-% Conclussion
-One advantage of our implementation is its simplicity and scalability. By using a relatively simple mechanical problem, we were able to develop a pipeline that can be easily scaled to more complex problems. Additionally, the use of a neural network allows for faster computation times than the traditional FEM method. This has the potential to significantly reduce computational costs on any numerical processes that rely on FEM simulations, such as material identification algorithms for tissue disease diagnostics problems and stress CAD for manufacturing.
-
-
-
-
-%\\
-%\\
-%\textbf{Acknowledgements:} The authors acknowledges to ... (no more than 2 lines)
-% ACKNOWLEDGEMENTS IN THE FIRST PAGE ARE ALLOWED ONLY FOR
-% PRESENTATIONS OF ABSTRACTS (NOT FOR FULL ARTICLES)
 \end{abstract}
 
 %\section{INTRODUCTION}
