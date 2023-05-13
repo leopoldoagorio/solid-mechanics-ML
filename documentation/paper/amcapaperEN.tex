@@ -4,7 +4,7 @@
 \usepackage{amsmath,amsfonts}
 \usepackage[utf8]{inputenc}
 %
-\title{Automating a FEM solution database generation and neural network learning for solid mechanics problems}
+\title{INSTRUCTIONS TO PREPARE AN ARTICLE ACCORDING TO THE AMCA-STYLE}
 
 
 \author[a]{L.C. Agorio}
@@ -28,16 +28,7 @@ Artificial Neural Networks, Finite Element Method, Solid Mechanics, Surrogate-mo
 \end{keywords}
 
 \begin{abstract}
-
-    % motivation
-    Solving finite element simulations can be computationally expensive, particularly in solid mechanics field. This is a challenge in applications such as biomechanics and manufacturing design process, where the same problem may need to be solved in real time for different configurations or input data. 
-    % scope 
-    In this paper we combined Finite Element Method (FEM) and Artificial Neural Networks (ANN) to improve the speed and efficiency of solving mechanical problems. A pipeline to generate databases of FEM solutions was developed interacting with an in-house Open Source Software for non-linear Analysis of Structures (ONSAS). The databases were used to train a neural network that takes geometrical and material properties as inputs, and as an output predicts the displacements solution of the mechanical problem.
-    % results de los ejemplos d
-    Our experiments showed that the proposed approach was effective, achieving low losses on both the training and test datasets. We present a validation example where the ANN was capable to match the analytic solution with great accuracy. Moreover, more complex problems were solved with different geometries, boundary conditions and materials considering large strain deformations.
-    % conlcusion limitations and future work
-    One advantage of our implementation is its simplicity and scalability. We were able to develop a pipeline that can be easily scaled to a wide range of mechanical problems. Additionally, the use of ANN allows a faster computation times than the traditional solvers using the FEM method. Finally, we present a discussion about the limitations of the proposed approach and future work.
-
+    Solving finite element simulations can be computationally expensive, particularly in solid mechanics field. This is a challenge in applications such as bio-mechanics and manufacturing design process, where the same problem may need to be solved in real time for different configurations or input data.  In this paper we combined Finite Element Method (FEM) and Artificial Neural Networks (ANN) to improve the speed and efficiency of solving mechanical problems. A pipeline to generate databases of FEM solutions was developed interacting with an in-house Open Source Software for non-linear Analysis of Structures (ONSAS). The databases were used to train a neural network that takes geometrical and material properties as inputs, and as an output predicts the displacements solution of the mechanical problem. Our experiments showed that the proposed approach was effective, achieving low losses on both the training and test datasets. We present a validation example where the ANN was capable to match the analytic solution with great accuracy. Moreover, more complex problems were solved with different geometries, boundary conditions and materials considering large strain deformations. One advantage of our implementation is its simplicity and scalability. We were able to develop a pipeline that can be easily scaled to a wide range of mechanical problems. Additionally, the use of ANN allows a faster computation times than the traditional solvers using the FEM method.  Although the study presents promising results, we also discussed the limitations of the proposed approach and potential directions for future work.
 \end{abstract}
 
 %\section{INTRODUCTION}
