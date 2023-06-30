@@ -5,7 +5,10 @@
 *.fls
 *.log
 *.synctex.gz
+*.bbl
+*.blg
 main.pdf
 *.out
-octave-workspace
 __pycache__
+.vscode/settings.json
+documentation/paper/amcapaperEN.bbl
