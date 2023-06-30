@@ -4,6 +4,9 @@
 \usepackage{amsmath,amsfonts}
 \usepackage[utf8]{inputenc}
 %
+
+\usepackage{subcaption} % for creating subfigures
+\graphicspath{{Figures/}} % Specifies the directory where pictures are stored
 \title{INSTRUCTIONS TO PREPARE AN ARTICLE ACCORDING TO THE AMCA-STYLE}
 
 
@@ -31,222 +34,169 @@ Artificial Neural Networks, Finite Element Method, Solid Mechanics, Surrogate-mo
 Solving finite element problems can be computationally expensive, particularly in nonlinear solid mechanics. This challenge emerges in applications such as biomechanics or manufacturing process design, where the same problem may need to be solved in real time for different configurations or input data. In this paper we combine Finite Element Method (FEM) and Artificial Neural Networks (ANN) to improve the speed and efficiency of solvers in solid mechanics problems. A pipeline to generate databases of FEM solutions was developed interacting with an in-house Open Source Software for non-linear Analysis of Structures (ONSAS). The databases were used to train a neural network that takes geometrical and material properties as inputs, and as an output predicts the displacements solution of the mechanical problem. Our experiments showed that the proposed approach was effective, achieving low losses on both the training and test datasets. We present a validation example where the ANN was capable of matching the analytic solution with great accuracy. Moreover, more complex problems were solved with different geometries, boundary conditions and materials, considering large strain deformations. One advantage of our implementation is its simplicity and scalability. We were able to develop a pipeline that can be easily scaled to a wide range of mechanical problems. Additionally, the use of ANN provides a faster computation time than the traditional solvers using the FEM method.  Although the study presents promising results, we also discussed the limitations of the proposed approach and potential directions for future work.
 \end{abstract}
 
-%\section{INTRODUCTION}
+\section{Introduction}
+The objective of this project is to develop a surrogate model for unidimensional mechanical problems that is faster than the finite element method (FEM). To achieve this, we trained a neural network using a dataset of FEM solutions to compression/extension mechanical problems. The ultimate goal is to apply this approach to develop state-of-the-art surrogate models for biological tissues. In this project, we used a FEM solver repeatedly to generate a large dataset of results, which was used to train the neural network. The neural network was designed to learn from the FEM solutions and solve similar mechanical problems more quickly.
+
+This documentation report will describe the methodology used to develop the neural network, the performance of the model compared to the FEM, and potential future directions for this project. By developing a faster surrogate model, this project's approach has the potential to significantly improve the efficiency of solving unidimensional mechanical problems, with broader implications for the engineering design process.
+
+\section{Methodology}
+In this section, we describe the pipeline we developed to generate the dataset of FEM solutions and train the neural network. We used a simple solid mechanical models with the \texttt{ONSAS.m} FEM solver, which we automated with a bash script. The resulting dataset was preprocessed and used to train a multi-layer perceptron (MLP) implemented in PyTorch.
+
+\subsection{Uniaxial Model}
+This model consisted of a uniaxial mechanical problem in which a load was applied to a three-dimensional prism, causing it to deform in three dimensional. The model is uniaxial in the sense that the applied load is along the x-axis. We used the \texttt{ONSAS.m} FEM solver to simulate the deformation and generate a dataset of solutions. The uniaxial model was chosen for its simplicity and as a starting point for more complex models.
+
+The simulated uniaxial problem can be seen in Figure \ref{fig:uniaxial_model}. Loads are applied to the prism at the right end, causing it to deform. The prism is constrained to to mantain the lefmost face (Figure \ref{fig:uniaxial_model}) in the y-z plane, and the origin fixed, thus the deformation is uniaxial.
+
+\begin{figure}[ht]
+	\centering
+	\begin{subfigure}[b]{0.48\textwidth}
+	\def\svgwidth{\textwidth}
+	\input{Figures/Example1.pdf_tex}
+	\caption{Reference configuration sketch.}
+	%\label{fig:image1}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}[b]{0.48\textwidth}
+	\centering
+		\includegraphics[width=\textwidth]{Figures/Example1.png}
+	\caption{System with an applied load.}
+	%\label{fig:image2}
+	\end{subfigure}
+	\caption{Uniaxial problem simulated and solved in \texttt{ONSAS.m}.}
+	\label{fig:uniaxial_model}
+\end{figure}
+
+
+\subsection{Composed Cantilever Model}
+Our composed cantilever model consists of two prisms made of different materials, denoted as $1$ and $2$, for which the elastic moduli and Poisson ratios are $E_1, \nu_1$ and $E_2, \nu_2$, respectively. Prism $1$ is fixed by its face at the $x=0$ plane. We applied a load of $(-p_x, t_y, t_z)$ at the plane located at $x=Lx$ along the $x, y$, and $z$ axes, respectively as shown in Figure \ref{fig:composed_cantilever_model}.
+
+\begin{figure}[ht]
+	\centering
+	\begin{subfigure}[b]{0.48\textwidth}
+	\def\svgwidth{\textwidth}
+	\input{Figures/Example2.pdf_tex}
+	\caption{Reference configuration sketch.}
+	\label{fig:ex1_ilus}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}[b]{0.48\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{Figures/Ejemplo2.png}
+	\caption{System with an applied load.}
+	%\label{fig:image2}
+	\end{subfigure}
+	\caption{Composed cantilever problem simulated and solved in \texttt{ONSAS.m}.}
+	\label{fig:composed_cantilever_model}
+\end{figure}
+
+
+\subsection{Bash Script}
+To automate the FEM solver, we developed a bash script that generated the input files for the \texttt{ONSAS.m} solver and executed it repeatedly to generate a large dataset of solutions. The script also handled the output files, extracting the relevant data and formatting into a \texttt{.csv} it for further processing.
+
+The variables swept by the script were the length of the prism $Lx$ (ranging from 1 to 3), the applied load $p$ (ranging from 0.1 to 3), and the elastic modulus of the material $E$ (ranging from 1 to 4). $Ly$ and $Lz$, were fixed at 1, and the Poisson ratio, $\nu$, was fixed at 0.3. The output of the solver was processed to obtain the displacement of the center point of the prism's face in the three dimensions.  The script generated a total of 18900 data points, which were used to train the neural network.
+
+For the composed cantilever model, we swept the variables including the length of the prism ($Lx$, ranging from 1 to 2), the applied load ($p$, ranging from 0.05 to 0.14), and the elastic moduli of each material ($E_1$ and $E_2$, ranging from 1.4 to 2.4). Fixed values were $Ly=1$,$Lz=0.5$ and  $\nu_1=\nu_2=0.3$. The output of the solver was processed to obtain the displacement of the center point of the prism's face in the three dimensions. The script generated a total of 13310 data points, which were used to train the neural network.
+
+\subsection{Neural Network}
+We implemented an MLP in PyTorch to learn from the FEM solutions and solve similar mechanical problems more quickly. The MLP had two hidden layers with 20 and 10 neurons, respectively, and used the ReLU activation function. The output layer had three neurons, corresponding to the three dimensions of the displacement of the center point of the prism's face. The optimizer was Adam with a learning rate of 0.001 and 100 epochs were used. 
+
+In the uniaxial case we used a 50/50 split for the training and validation sets, and 200 test samples using the analytic solution. For the composed cantilever case we used 1000 samples for both the training and validation sets.
+
+We report two different loss functions: the mean squared error (MSE) and the relative MSE. The MSE is the most common loss function for regression problems, and is defined as:
+\begin{equation}
+\label{eq:MSE}
+MSE = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2
+\end{equation}
+where $y_i$ is the true value and $\hat{y}_i$ is the predicted value. The relative MSE is defined as:
+\begin{equation}
+\label{eq:RMSE}
+RMSE = \frac{1}{n} \sum_{i=1}^{n} \frac{||y_i - \hat{y}_i||_2^2}{||y_i||_2^2}
+\end{equation}
+The relative MSE is more useful for comparing the performance of different models, since it is normalized by the true value.
+
+\subsection{Analytic Solution}
+To compare the performance of our neural network to the FEM, we computed the analytic solution to the uniaxial problem. The analytic solution is given by:
+
+\begin{equation}
+\label{eq:analytic_solution}
+\boldsymbol{u} = 
+(\alpha - 1)L_x \boldsymbol{e}_1 
++   
+(\beta - 1) \frac{L_y}{2}  \boldsymbol{e}_2 
++   
+(\beta - 1)\frac{L_z}{2} \boldsymbol{e}_3 
+\end{equation}
+
+where $\boldsymbol{u}$ is the displacement of the center point of the prism's face, $L_x$, $L_y$ and $L_z$ are the dimensions of the solid as it is shown in Figure \ref{fig:ex1_ilus}. The values of $\alpha$ and $\beta$ are obtained solving the following pair of non-linear equations:
 %
-%This document provides information and instructions to prepare an
-%article according to the AMCA style. Only the articles formatted
-%according to the present guidelines will be accepted for AMCA
-%publications.
+\begin{eqnarray}
+\alpha \left( 
+\mu -  \frac{\mu}{\alpha^2} + \frac{K\beta^2}{\alpha} (\beta^2 \alpha -1)  
+\right) &=& - p \\
+ %
+\beta \left( 
+	\mu -  \frac{\mu}{\beta^2} + K (\alpha^2\beta^2 - \alpha) 
+ \right) &=& 0
+\end{eqnarray}
 %
-%\section{GENERAL SPECIFICATIONS}
-%
-%The article may be written in English, Spanish or Portuguese
-%within a printing box of 16cm x 24cm, centered in the page. The
-%paper including figures, tables and references must have a minimum
-%length of 4 pages and must not exceed 10 pages. The article must
-%be uploaded to the AMCA site in the form of a \textbf{PDF} file;
-%no other formats (MS Word, RTF) are accepted. The size of the PDF
-%file of the article must not exceed 2~MBytes.
-%
-%\subsection{Use of acronyms}
-%
-%If acronyms are used, then define them before their first
-%occurrence.
-%
-%\section{TITLE, AUTHORS, AFFILIATION, KEYWORDS}
-%
-%The first page must contain the Title, Author(s), Affiliation(s),
-%Keywords and the Abstract. The second page must begin with the
-%Introduction. The first line of the title is located 3cm from the
-%top of the printing box to enable the insertion of the conference
-%header and AMCA logo.
-%
-%\subsection{Title}
-%
-%The title should be written centered, in 14pt, boldface Times
-%Roman, all capital letters. It should be single spaced if the
-%title is more than one line long. Inclusion of formulas or special
-%characters in the title is \textbf{highly} discouraged. Acronyms
-%may be used if defined \emph{in-line}, for instance ``Large Eddy
-%Simulation (LES) of flow around a cylinder''.
-%
-%\subsection{Author}
-%
-%The author's name should include first name, only the initial of
-%the second name and last name. It should be written centered, in
-%12pt boldface Times Roman, 12pt below the title. Collate all the
-%authors together, split in several lines if necessary. Use the
-%connector ``{\bf and}'' before the last author. Affiliations must
-%be arranged in centered blocks, after the list of authors.
-%Identify the authors with their corresponding affiliations using a
-%letter superscript, as in the example. If all the authors belong
-%to the same affiliation do not use superscript
-%
-%\subsection{Affiliation}
-%
-%Author's affiliation should be written centered, in 11pt Italic
-%Times Roman, 12pt below the list of authors. A 12pt space should
-%separate two different affiliations. It is recommended that the
-%authors include an e-mail address and a web page per affiliation
-%site, if possible.
-%
-%\subsection{Keywords}
-%
-%Please, write no more than six keywords.  They should be written
-%left aligned, in 12pt Times Roman, and the line must begin with
-%the word {\bf Keywords}. A 12pt space should separate the keywords
-%from the affiliations.
-%
-%\subsection{Abstract}
-%
-%Use 11pt Times Roman for the abstract. The word {\bf Abstract}
-%must be set in boldface, not italicized, at the beginning of the
-%first line. The abstract text should be justified and separated
-%12pt from the keywords, as shown in the first page of these
-%instructions. The abstract should be self-contained, so do not
-%include figures, tables or equations in the abstract. Neither
-%include any reference to such material. It is discouraged to
-%include references to other work in the abstract. In case of
-%including any references, then they should be included
-%\emph{in-line} but abbreviated, as in this example (C. Jhonson
-%et.al., \emph{Int J Num Meth Eng}, 34(3):543--568 (1992); D.
-%Mitchell and J. Brady, \emph{J Sound Vib}, 21(2):221--230 (2006)).
-%Multiple citations should be separated by semi-colons. \textbf{It
-%is strongly discouraged to include more than 2 references in the
-%abstract}. Inclusion of formulas is \textbf{highly} discouraged.
-%Avoid special characters. If acronyms are used, then define them
-%before their first occurrence. An extension of the abstract
-%between 150 and 300 words is suggested.
-%
-%\section{HEADINGS}
-%
-%\subsection{Main headings}
-%
-%The main headings should be written left-aligned, in 12pt,
-%boldface and all capital Times Roman letters. There should be a
-%12pt space before and a 6pt space after the main headings.
-%
-%\subsection{Secondary headings}
-%
-%The secondary headings should be written left-aligned, in 12pt,
-%boldface Times Roman, with an initial capital for the first word
-%only. There should be a 12pt space before and a 6pt space after
-%the secondary headings.
-%
-%\section{TEXT}
-%
-%The normal text should be written single-spaced, justified, using
-%12pt Times Roman, in one column. The first line of each paragraph
-%must be indented 0.5cm. There is not inter-paragraph spacing.
-%
-%\section{PAGE NUMBERS}
-%
-%The authors {\bf must not number} the pages of the article.
-%Numbers will be added by the editor/publisher.
-%
-%\section{FIGURES}
-%
-%All the figures should be numbered consecutively and captioned.
-%The caption should be written centered, in 10pt Times Roman.
-%Capitalize only the first letter of the sentence.
-%
-%\begin{figure*}[htb]
-%\centerline{\includegraphics{firstpage}}
-%\caption{Page layout}
-%\label{fg:figure}
-%\end{figure*}
-%
-%A 6pt space should separate the figure from the caption, and a
-%12pt space should separate the upper part of the figure and the
-%bottom of the caption from the surrounding text (see
-%Fig.~\ref{fg:figure}).
-%
-%Figures should be referenced in the text. Color figures are
-%welcomed.
-%
-%\section{EQUATIONS}
-%
-%A displayed equation is numbered, using Arabic numbers in
-%parentheses. It should be  centered, leaving a 6pt space above and
-%below to separate it from the surrounding text.
-%
-%The following example is a simple single line
-%equation
-%%
-%\begin{equation}
-%Ax = b.
-%\end{equation}
-%
-%The next example is a multi-line equation
-%%
-%\begin{equation} \label{eq:simple}
-%\begin{aligned}
-%Ax& = b,\\
-%Ax& = c.
-%\end{aligned}
-%\end{equation}
-%%
-%If possible, internal PDF links must be generated for references to
-%equations. The recommended color for links to references in the text
-%is blue (e.g., see Eq.~(\ref{eq:simple})).
-%
-%\section{TABLES}
-%
-%All tables should be numbered consecutively and captioned; the
-%caption should be 10pt Times Roman. Capitalize only the first
-%letter of the sentence.
-%
-%A space of 6pt separates the table from the caption, and 12pt space
-%separates the table from the surrounding text. For an example, see
-%Table~\ref{tab:n50}. Tables should be referenced in the text.
-%
-%\begin{table}[htb]
-%\centering
-%\begin{tabular}{|c|c|c|c|}
-%\hline  & 20x20 mesh & 50x50 mesh & 100x100 mesh\\
-%\hline
-%\hline
-% 0 & 41.00 & 1.00 & 4.92\\
-%\hline
-% 1 & 40.86 & 1.02 & 4.88 \\
-%\hline
-%10 & 23.81 & 3.44 & 2.92 \\
-%\hline
-%50 & 5.62 & 64.20 & 1.08 \\
-%\hline
-%\end{tabular}
-%\caption{Condition number for the Stekhlov operator. }
-%\label{tab:n50}
-%\end{table}
-%
-%\section{FORMAT OF REFERENCES}
-%
-%References should be quoted in the text using the
-%\emph{author-style} (a.k.a. \emph{Harvard style}). References can
-%be cited in \emph{parenthetical} form
-%\citep{zienkiewicz91,idelsohn94,meyer82,meyer82b}, or in
-%\emph{textual} form, e.g. see
-%\citet{zienkiewicz91,idelsohn94,meyer82,meyer82b}.  References are
-%grouped together and sorted alphabetically at the end of the
-%article as shown in these instructions. Do not include references
-%that are not cited in the article body. Use references with Roman
-%symbols. Do not use, for example, Greek, Chinese or Japanese
-%symbols.
-%
-%If possible, internal PDF links must be generated for citations. The
-%recommended color for links to references in the text is blue. The
-%preferred color for links to external references, as web pages,
-%is red (e.g. \url{http://www.amcaonline.org.ar}).
-%
-%\section{CONCLUSIONS}
-%
-%Template files in TeX, \LaTeX{} and MS-Word may be found at the
-%AMCA web site: \url{http://www.amcaonline.org.ar}. It is
-%recommended to use these files to comply with the style more
-%easily. Remember: {\bf Do not number the pages.}
-%
-%%\section*{ACKNOWLEDGEMENTS} The authors acknowledges to ...
-%% ACKNOWLEDGEMENTS FOR FULL ARTICLES
+where  $p$ is the applied load, $K = \frac{E}{3(1 - 2\nu)}$ is the Bulk modulus and $\mu = \frac{E}{2(1 + \nu)}$ is the second Lamé parameter, $E$ is the elastic modulus and $\nu$ is the Poission's ratio. 
+
+
+
+This allows us to generate a dataset of analytic solutions, which we can use to compare the performance of the neural network to the FEM. For doing so we used lhs to generate a Latin Hypercube Sampling of the input variables, and then computed the analytic solution for each of the 200 points in the sample.
+
+
+\section{Results}
+In this section, we present the results of our experiments. We compare the performance of our neural network to the FEM, and evaluate its effectiveness on a uniaxial problem and a composed cantilever problem.
+
+\subsection{Evaluation for Uniaxial Compression}
+
+\begin{figure}[htpb!]
+	\centering
+	\includegraphics[width=1\textwidth]{Figures/Example1_losses.png}
+	\caption{Training, validation and test loss of the neural network on the uniaxial compression/extension dataset.}
+	\label{fig:train_loss}
+	\end{figure}
+ 
+Figure \ref{fig:train_loss} shows the training, validation, and test losses of our neural network on the uniaxial compression/extension dataset. The final training loss for MSE is $5.29\times10^{-4}$ and the RMSE is $2\times10^{-6}$. The final validation loss RMSE is $2\times10^{-6}$, and the final analytic loss RMSE is $1.7\times10^{-5}$.
+%\begin{itemize} \item Final training loss MSE 0.000529
+%	\item Final training loss RMSE 0.000002
+%	\item Final validation loss RMSE 0.000002
+%	\item Final analytic loss RMSE 0.000017
+%	\item RMSE extrapolation error for (Lx, E, p) = (4.00, 0.50, 3.50): is 0.067281 \item MSE extrapolation error for (Lx, E, p) = (4.00, 0.50, 3.50): is 0.946485 m$^2$ 
+%\end{itemize}
+We also evaluated the ability of our model to extrapolate beyond the parameters in the training set. When we measured the RMSE extrapolation error for $(Lx, E, p) = (4.00, 0.50, 3.50)$, we found it to be $6.7\times10^{-2}$, while the MSE extrapolation error was $9.5\times10^{-1}$ $m^2$. Since the variation range for the training parameters was $(Lx, E, p) = (1 \hdots 3, 1 \hdots 4, .1 \hdots 3)$, these results show that our neural network was able to extrapolate to a point that was not in the training set, with an error of 6.7 of the true value.
+
+\subsection{Evaluation on Cantilever Model}
+For the case of the composed cantilever model, the training, validation and test loss is shown in Figure \ref{fig:composed_cantilever_loss}. As we can see, the training loss decreases rapidly during the first few epochs and then levels off. 
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=1\textwidth]{Figures/Example2_losses.png}
+\caption{Training, validation and test loss of the neural network on the composed cantilever dataset.}
+\label{fig:composed_cantilever_loss}
+\end{figure}
+
+
+Figure \ref{fig:composed_cantilever_loss} shows the training, validation, and test losses of our neural network on the cantilever model. The final training loss for MSE is $2.3\times10^{-3}$ and the RMSE is $2.4\times10^{-4}$. The final validation loss RMSE is $2.5\times10^{-4}$, and the final analytic loss RMSE is $2.9\times10^{-4}$.
+
+We also evaluated the ability of our model to extrapolate beyond the parameters in the training set. When we measured the RMSE extrapolation error for $(Lx, E1, E2, p) = (1.50, 1.3, 1.3, 0.10)$, we found it to be $0.21$. Since the variation range for the training parameters was $(Lx, E1, E2, p) = (1 \hdots 2, 1.4 \hdots 2.4, 1.4 \hdots 2.4, 0.05 \hdots 0.14)$, these results show that our neural network was able to extrapolate to a point that was not in the training set, with an error of $21 \%$ of the true value. 
+%$6.7\times10^{-2}$, while the MSE extrapolation error was $9.5\times10^{-1}$ $m^2$. Since the variation range for the training parameters was $(Lx, E, p) = (1 \hdots 3, 1 \hdots 4, .1 \hdots 3)$, these results show that our neural network was able to extrapolate to a point that was not in the training set, with an error of 6.7 of the true value.
+
+%\begin{itemize}
+%\item Final training loss MSE 0.002276  
+%\item Final training loss RMSE 0.000243  
+%\item Final validation loss RMSE 0.000254  
+%\item Final test loss RMSE 0.000287  
+%\item RMSE extrapolation error for (Lx, E1, E2, p) = (1.50, 1.20, 1.20, 0.16): is 0.672594
+%\end{itemize}
+
+\section{Conclusion}
+In this project, we developed a pipeline for generating a dataset of FEM solutions to simple solid mechanical problems, and used this dataset to train a neural network to solve the same problems more quickly. Our experiments showed that our approach was effective, with the neural network achieving low losses on both the training and test datasets, and closely matching the theoretical curve for uniaxial compression. We also demonstrated that our approach has the potential to be extended to more complex mechanical problems, as shown by our evaluation on a cantilever model. 
+
+One advantage of our implementation is its simplicity and scalability. By using a relatively simple mechanical problem, we were able to develop a pipeline that can be easily scaled to more complex problems. Additionally, the use of a neural network allows for faster computation times than the traditional FEM method. This has the potential to significantly reduce computational costs on any numerical processes that rely on FEM simulations, such as material identification algorithms for tissue disease diagnostics problems and stress CAD for manufacturing.
+
+In conclusion, this project demonstrates the effectiveness of using a neural network to solve simple mechanical problems. By developing a faster surrogate model, we have shown the potential to significantly improve the efficiency of solving such problems, with broader implications for the engineering design process. Future work includes scaling our approach to more complex mechanical problems and evaluating its effectiveness on a larger dataset.\cite{zienkiewicz91}.
 
 \bibliography{amcapaper}
 \end{document}
