@@ -1,9 +1,17 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{2}
 \providecommand{\natexlab}[1]{#1}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
   \providecommand{\doi}{doi:\discretionary{}{}{}\begingroup
   \urlstyle{rm}\Url}\fi
+
+\bibitem[{Pellicer-Valero et~al.(2020)Pellicer-Valero, Rup{\'e}rez,
+  Mart{\'\i}nez-Sanchis, \amcabtxand{} Mart{\'\i}n-Guerrero}]{pellicer2020real}
+Pellicer-Valero O.J., Rup{\'e}rez M.J., Mart{\'\i}nez-Sanchis S., \amcabtxand{}
+  Mart{\'\i}n-Guerrero J.D.
+\newblock Real-time biomechanical modeling of the liver using machine learning
+  models trained on finite element method simulations.
+\newblock \emph{Expert Systems with Applications}, 143:113083, 2020.
 
 \bibitem[{Zienkiewicz \amcabtxand{} Taylor(1991)}]{zienkiewicz91}
 Zienkiewicz O. \amcabtxand{} Taylor R.
