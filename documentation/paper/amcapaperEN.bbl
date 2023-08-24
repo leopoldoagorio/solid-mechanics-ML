@@ -1,4 +1,4 @@
-\begin{thebibliography}{8}
+\begin{thebibliography}{9}
 \providecommand{\natexlab}[1]{#1}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
@@ -49,6 +49,12 @@ Raissi M., Perdikaris P., \amcabtxand{} Karniadakis G.E.
 \newblock Physics informed deep learning (part i): Data-driven solutions of
   nonlinear partial differential equations.
 \newblock \emph{arXiv preprint arXiv:1711.10561}, 2017.
+
+\bibitem[{Stein(1987)}]{stein1987large}
+Stein M.
+\newblock Large sample properties of simulations using latin hypercube
+  sampling.
+\newblock \emph{Technometrics}, 29(2):143--151, 1987.
 
 \bibitem[{Steuben et~al.(2015)Steuben, Michopoulos, Iliopoulos, \amcabtxand{}
   Turner}]{steuben2015inverse}

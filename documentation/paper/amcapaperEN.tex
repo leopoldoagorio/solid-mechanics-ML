@@ -31,23 +31,25 @@ Artificial Neural Networks, Finite Element Method, Solid Mechanics, Surrogate-mo
 \end{keywords}
 
 \begin{abstract}
-Solving finite element problems can be computationally expensive, particularly in nonlinear solid mechanics. This challenge emerges in applications such as biomechanics or manufacturing process design, where the same problem may need to be solved in real time for different configurations or input data. In this paper we combine Finite Element Method (FEM) and Artificial Neural Networks (ANN) to improve the speed and efficiency of solvers in solid mechanics problems. A pipeline to generate databases of FEM solutions was developed interacting with an in-house Open Source Software for non-linear Analysis of Structures (ONSAS). The databases were used to train a neural network that takes geometrical and material properties as inputs, and as an output predicts the displacements solution of the mechanical problem. Our experiments showed that the proposed approach was effective, achieving low losses on both the training and test datasets. We present a validation example where the ANN was capable of matching the analytic solution with great accuracy. Moreover, more complex problems were solved with different geometries, boundary conditions and materials, considering large strain deformations. One advantage of our implementation is its simplicity and scalability, allowing to easily solve a wide range of mechanical problems. Additionally, the use of ANN provides a faster computation time than the traditional solvers using the FEM method.  Although the study presents promising results, we also discussed the limitations of the proposed approach and potential directions for future work. 
+Solving finite element problems can be computationally expensive, particularly in nonlinear solid mechanics. This challenge emerges in applications such as biomechanics or manufacturing process design, where the same problems may need to be solved in real time for different configurations or input data. In this paper, we combine Finite Element Method (FEM) and Artificial Neural Networks (ANN) to improve the speed and efficiency of solvers in solid mechanics problems. We developed a pipeline to generate databases of FEM solutions by interacting with an in-house Open Source Software for non-linear Analysis of Structures (ONSAS). We used these databases to train a neural network that takes geometrical and material properties as inputs, and as an output, predicts the displacements solution of the mechanical problems. Our experiments showed that the proposed approach was effective, achieving low losses on both the training and test datasets. We present validation examples where the ANN was capable of matching the analytic solutions with great accuracy.Moreover, we solved more complex problems with different geometries, boundary conditions, and materials, considering large strain deformations. One advantage of our implementation is its simplicity and scalability, allowing us to easily solve a wide range of mechanical problems.Additionally, the use of ANN provides faster computation times than the traditional solvers using the FEM method. Although this study presents promising results, we also discuss the limitations of the proposed approach and potential directions for future work.
 \end{abstract}
 
 \section{Introduction}
-In this article the results obtained using a surrogate model for simple solid mechanics problems are shown. The main goal is to conclude whether this approxiimate model can provide precise solutions using less computation time than the Finite Element Method (FEM) \citep{martinez2017finite, bohringer2023strategy}. To achieve this, a neural network (NN) was trained using a dataset of FEM solutions for compression/extension mechanical problems.
 
-There is an increasing interest in using this type of models in a wide range of applications, such as in biological tissues modelling \citep{pellicer2020real}. In this work, a FEM solver  was repeatedly used to generate a large dataset of results, which was used to train the NN. The NN was designed to learn from the FEM solutions and predict the displacement field at particular nodes \citep{yang2022tracker}. Surrogate models can be used for structural assessment by tracking geometric features along time \citep{zhu2023visual} and for solving material identification problems \citep{steuben2015inverse}. Moreover existing methods such as Physics-Informed Neural Networks leverages on the underlying dynamics to train the model \citep{raissi2017physics}. 
+In this article, we show the results obtained using a surrogate model for simple solid mechanics problems. Our main goal is to conclude whether this approximate model can provide precise solutions using less computation time than the Finite Element Method (FEM) \citep{martinez2017finite, bohringer2023strategy}. To achieve this, we trained a neural network (NN) using a dataset of FEM solutions for compression/extension mechanical problems.
 
-In this work the methodology used to develop the NN, the performance results of the model compared to the FEM, and potential future directions are presented. By developing a faster surrogate model, this research line has the potential to significantly improve the efficiency of solving mechanical problems, with broader implications for the engineering design process.
+
+There is an increasing interest in using these types of models in a wide range of applications, such as in biological tissues modeling \citep{pellicer2020real}. In this work, we repeatedly used a FEM solver to generate a large dataset of results, which was used to train the NN. The NN was designed to learn from the FEM solutions and predict the displacement field at particular nodes \citep{yang2022tracker}. Surrogate models can be used for structural assessment by tracking geometric features along time \citep{zhu2023visual} and for solving material identification problems \citep{steuben2015inverse}. Moreover, existing methods such as Physics-Informed Neural Networks leverage the underlying dynamics to train the model \citep{raissi2017physics}.
+
+In this work, we present the methodology used to develop the NN, the performance results of the model compared to the FEM, and potential future directions. By developing faster surrogate models, our research line has the potential to significantly improve the efficiency of solving mechanical problems. This has broader implications for the engineering design process.
 
 \section{Methodology}
 In this section, we describe the pipeline we developed to generate the dataset of FEM solutions and train the NN. We used a simple solid mechanical models with the \texttt{ONSAS.m} FEM solver, which we automated with a bash script. The resulting dataset was preprocessed and used to train a multi-layer perceptron (MLP) implemented in PyTorch.
 
 \subsection{Uniaxial Model}
-This model consisted of a uniaxial mechanical problem in which a load was applied to a three-dimensional prism, causing it to deform in three dimensional. The model is uniaxial in the sense that the applied load is along the x-axis. We used the \texttt{ONSAS.m} FEM solver to simulate the deformation and generate a dataset of solutions. The uniaxial model was chosen for its simplicity and as a starting point for more complex models.
+This model consisted of a uniaxial mechanical problem in which a load was applied to a three-dimensional prism, causing it to deform in three dimensional. The model is uniaxial in the sense that the applied load is along the x-axis. We used the \texttt{ONSAS.m} FEM solver to simulate the deformation and generate a dataset of solutions. We chose for its simplicity and as a starting point for more complex models.
 
-The simulated uniaxial problem can be seen in Figure \ref{fig:uniaxial_model}. Loads are applied to the prism at the right end, causing it to deform. The prism is constrained to to mantain the lefmost face (Figure \ref{fig:uniaxial_model}) in the y-z plane, and the origin fixed, thus the deformation is uniaxial.
+The simulated uniaxial problem can be seen in Figure \ref{fig:uniaxial_model}. Loads are applied to the prism at the right end, causing it to deform. The prism is constrained to maintain the lefmost face (Figure \ref{fig:uniaxial_model}) in the y-z plane, and the origin fixed, thus the deformation is uniaxial.
 
 \begin{figure}[ht]
 	\centering
@@ -70,7 +72,7 @@ The simulated uniaxial problem can be seen in Figure \ref{fig:uniaxial_model}. L
 
 
 \subsection{Composed Cantilever Model}
-Our composed cantilever model consists of two prisms made of different materials, denoted as $1$ and $2$, for which the elastic moduli and Poisson ratios are $E_1, \nu_1$ and $E_2, \nu_2$, respectively. Prism $1$ is fixed by its face at the $x=0$ plane. We applied a load of $(-p_x, t_y, t_z)$ at the plane located at $x=Lx$ along the $x, y$, and $z$ axes, respectively as shown in Figure \ref{fig:composed_cantilever_model}.
+The composed cantilever model consists of two prisms made of different materials, denoted as $1$ and $2$, for which the elastic moduli and Poisson ratios are $E_1, \nu_1$ and $E_2, \nu_2$, respectively. Prism $1$ is fixed by its face at the $x=0$ plane. A load of $(-p_x, t_y, t_z)$ is applied at the plane located at $x=Lx$ along the $x, y$, and $z$ axes, respectively as shown in Figure \ref{fig:composed_cantilever_model}.
 
 \begin{figure}[ht]
 	\centering
@@ -87,7 +89,7 @@ Our composed cantilever model consists of two prisms made of different materials
 	\caption{System with an applied load.}
 	%\label{fig:image2}
 	\end{subfigure}
-	\caption{Composed cantilever problem simulated and solved in \texttt{ONSAS.m}.}
+	\caption{Composed cantilever problem solved with \texttt{ONSAS.m}.}
 	\label{fig:composed_cantilever_model}
 \end{figure}
 
@@ -95,16 +97,16 @@ Our composed cantilever model consists of two prisms made of different materials
 \subsection{Bash Script}
 To automate the FEM solver, we developed a bash script that generated the input files for the \texttt{ONSAS.m} \citep{ONSAS} solver and executed it repeatedly to generate a large dataset of solutions. The script also handled the output files, extracting the relevant data and formatting into a \texttt{.csv} it for further processing.
 
-The variables swept by the script were the length of the prism $Lx$ (ranging from 1 to 3), the applied load $p$ (ranging from 0.1 to 3), and the elastic modulus of the material $E$ (ranging from 1 to 4). $Ly$ and $Lz$, were fixed at 1, and the Poisson ratio, $\nu$, was fixed at 0.3. The output of the solver was processed to obtain the displacement of the center point of the prism's face in the three dimensions.  The script generated a total of 18900 data points, which were used to train the NN.
+The variables swept by the script were the length of the prism ($Lx$, ranging from 1 to 3), the applied load ($p$, ranging from 0.1 to 3), and the elastic modulus of the material ($E$, ranging from 1 to 4). $Ly$ and $Lz$ were fixed at 1, and the Poisson ratio ($\nu$) was fixed at 0.3. We processed the solver's output to obtain the displacement of the center point of the prism's face in the three dimensions. The script generated a total of 18,900 data points, which we used to train the NN.
 
-For the composed cantilever model, we swept the variables including the length of the prism ($Lx$, ranging from 1 to 2), the applied load ($p$, ranging from 0.05 to 0.14), and the elastic moduli of each material ($E_1$ and $E_2$, ranging from 1.4 to 2.4). Fixed values were $Ly=1$,$Lz=0.5$ and  $\nu_1=\nu_2=0.3$. The output of the solver was processed to obtain the displacement of the center point of the prism's face in the three dimensions. The script generated a total of 13310 data points, which were used to train the NN.
+For the composed cantilever model, we swept the variables including the length of the prism ($Lx$, ranging from 1 to 2), the applied load ($p$, ranging from 0.05 to 0.14), and the elastic moduli of each material ($E_1$ and $E_2$, ranging from 1.4 to 2.4). Fixed values were $Ly=1$, $Lz=0.5$, and $\nu_1=\nu_2=0.3$. We processed the output of the solver to obtain the displacement of the center point of the prism's face in the three dimensions. The script generated a total of 13,310 data points, which were used to train the NN.
 
 \subsection{Neural Network}
-We implemented an MLP in PyTorch to learn from the FEM solutions and solve similar mechanical problems more quickly. The MLP had two hidden layers with 20 and 10 neurons, respectively, and used the ReLU activation function. The output layer had three neurons, corresponding to the three dimensions of the displacement of the center point of the prism's face. The optimizer was Adam with a learning rate of 0.001 and 100 epochs were used. 
+We implemented an MLP in PyTorch to learn from the FEM solutions and solve similar mechanical problems more quickly. The MLP has two hidden layers with 20 and 10 neurons, respectively, and a ReLU activation function. The output layer has three neurons, corresponding to the three dimensions of the displacement of the center point of the prism's face. We used Adam optimizer with a learning rate of 0.001 through 100 epochs.
 
-In the uniaxial case we used a 50/50 split for the training and validation sets, and 200 test samples using the analytic solution. For the composed cantilever case we used 1000 samples for both the training and validation sets.
+In the uniaxial case, we used a 50/50 split for the training and validation sets, and 200 test samples using the analytic solution. For the composed cantilever case, we used 1000 samples for both the training and validation sets.
 
-We report two different loss functions: the mean squared error (MSE) and the relative MSE. The MSE is the most common loss function for regression problems, and is defined as:
+We computed two different loss functions: the mean squared error (MSE) and the relative MSE. The MSE is the most common loss function for regression problems and is defined as:
 \begin{equation}
 \label{eq:MSE}
 MSE = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2
@@ -129,7 +131,7 @@ To compare the performance of our NN to the FEM, we computed the analytic soluti
 (\beta - 1)\frac{L_z}{2} \boldsymbol{e}_3 
 \end{equation}
 
-where $\boldsymbol{u}$ is the displacement of the center point of the prism's face, $L_x$, $L_y$ and $L_z$ are the dimensions of the solid as it is shown in Figure \ref{fig:ex1_ilus}. The values of $\alpha$ and $\beta$ are obtained solving the following pair of non-linear equations:
+where $\boldsymbol{u}$ is the displacement of the center point of the prism's face, $L_x$, $L_y$ and $L_z$ are the dimensions of the solid as it is shown in Figure \ref{fig:ex1_ilus}. We obtained the values of $\alpha$ and $\beta$ by solving the following pair of non-linear equations:
 %
 \begin{eqnarray}
 \alpha \left( 
@@ -144,12 +146,12 @@ where $\boldsymbol{u}$ is the displacement of the center point of the prism's fa
 where  $p$ is the applied load, $K = \frac{E}{3(1 - 2\nu)}$ is the Bulk modulus and $\mu = \frac{E}{2(1 + \nu)}$ is the second Lamé parameter, $E$ is the elastic modulus and $\nu$ is the Poission's ratio. 
 
 
-
-This allows us to generate a dataset of analytic solutions, which we can use to compare the performance of the neural network to the FEM. For doing so we used lhs to generate a Latin Hypercube Sampling of the input variables, and then computed the analytic solution for each of the 200 points in the sample.
+We used the analytic solution to generate a dataset, in order to compare the performance of the neural network to the FEM. For doing so we used lhs to generate a Latin Hypercube Sampling \citep{stein1987large} of the input variables, and then computed the analytic solution for each of the 200 points in the sample.
 
 
 \section{Results}
-In this section, we present the results of our experiments. We compare the performance of our neural network to the FEM, and evaluate its effectiveness on a uniaxial problem and a composed cantilever problem. All the scripts used to generate the results are publicly available in the corresponding \href{https://github.com/leopoldoagorio/solid-mechanics-ML}{ GitHub repository} \footnote{\href{https://github.com/leopoldoagorio/solid-mechanics-ML}{ https://github.com/leopoldoagorio/solid-mechanics-ML} }.
+
+In this section, we present the results of our experiments. We compared the performance of our neural network to the FEM, and evaluated its effectiveness on a uniaxial problem and a composed cantilever problem. All the scripts used to generate the results are publicly available in the corresponding \href{https://github.com/leopoldoagorio/solid-mechanics-ML}{ GitHub repository} \footnote{\href{https://github.com/leopoldoagorio/solid-mechanics-ML}{ https://github.com/leopoldoagorio/solid-mechanics-ML} }.
 
 \subsection{Evaluation for Uniaxial Compression}
 
@@ -161,12 +163,15 @@ In this section, we present the results of our experiments. We compare the perfo
 	\end{figure}
  
 Figure \ref{fig:train_loss} shows the training, validation, and test losses of our neural network on the uniaxial compression/extension dataset. The final training loss for MSE is $5.29\times10^{-4}$ and the RMSE is $2\times10^{-6}$. The final validation loss RMSE is $2\times10^{-6}$, and the final analytic loss RMSE is $1.7\times10^{-5}$.
+
+% From the python script print
 %\begin{itemize} \item Final training loss MSE 0.000529
 %	\item Final training loss RMSE 0.000002
 %	\item Final validation loss RMSE 0.000002
 %	\item Final analytic loss RMSE 0.000017
 %	\item RMSE extrapolation error for (Lx, E, p) = (4.00, 0.50, 3.50): is 0.067281 \item MSE extrapolation error for (Lx, E, p) = (4.00, 0.50, 3.50): is 0.946485 m$^2$ 
 %\end{itemize}
+
 We also evaluated the ability of our model to extrapolate beyond the parameters in the training set. When we measured the RMSE extrapolation error for $(Lx, E, p) = (4.00, 0.50, 3.50)$, we found it to be $6.7\times10^{-2}$, while the MSE extrapolation error was $9.5\times10^{-1}$ $m^2$. Since the variation range for the training parameters was $(Lx, E, p) = (1 \hdots 3, 1 \hdots 4, .1 \hdots 3)$, these results show that our neural network was able to extrapolate to a point that was not in the training set, with an error of 6.7 of the true value.
 
 \subsection{Evaluation on Cantilever Model}
@@ -183,8 +188,8 @@ For the case of the composed cantilever model, the training, validation and test
 Figure \ref{fig:composed_cantilever_loss} shows the training, validation, and test losses of our neural network on the cantilever model. The final training loss for MSE is $2.3\times10^{-3}$ and the RMSE is $2.4\times10^{-4}$. The final validation loss RMSE is $2.5\times10^{-4}$, and the final analytic loss RMSE is $2.9\times10^{-4}$.
 
 We also evaluated the ability of our model to extrapolate beyond the parameters in the training set. When we measured the RMSE extrapolation error for $(Lx, E1, E2, p) = (1.50, 1.3, 1.3, 0.10)$, we found it to be $0.21$. Since the variation range for the training parameters was $(Lx, E1, E2, p) = (1 \hdots 2, 1.4 \hdots 2.4, 1.4 \hdots 2.4, 0.05 \hdots 0.14)$, these results show that our neural network was able to extrapolate to a point that was not in the training set, with an error of $21 \%$ of the true value. 
-%$6.7\times10^{-2}$, while the MSE extrapolation error was $9.5\times10^{-1}$ $m^2$. Since the variation range for the training parameters was $(Lx, E, p) = (1 \hdots 3, 1 \hdots 4, .1 \hdots 3)$, these results show that our neural network was able to extrapolate to a point that was not in the training set, with an error of 6.7 of the true value.
 
+% From the python script print
 %\begin{itemize}
 %\item Final training loss MSE 0.002276  
 %\item Final training loss RMSE 0.000243  
@@ -194,11 +199,11 @@ We also evaluated the ability of our model to extrapolate beyond the parameters 
 %\end{itemize}
 
 \section{Conclusion}
-In this work, a pipeline for generating a dataset of FEM solutions for simple solid mechanical problems was presented. The dataset was used to train a neural network to predict the displacements at control nodes. The results showed that the proposed approach was effective, with the neural network achieving low losses on both the training and test datasets, and closely matching the theoretical curve for uniaxial compression. It was also demonstrated that this approach has the potential to be extended for more complex mechanical problems, as shown by our evaluation on a cantilever model. 
+In this work, we presented a pipeline for generating a dataset of FEM solutions for simple solid mechanical problems. The dataset was used to train a neural network to predict displacements at control nodes. The results showed that the proposed approach was effective, with the neural network achieving low losses on both the training and test datasets. The network closely matched the theoretical curve for uniaxial compression, demonstrating the accuracy of the predictions. Additionally, the evaluation on a cantilever model indicated the potential for extending this approach to more complex mechanical problems.
 
-One advantage of  this implementation is its simplicity and scalability. By using a relatively simple mechanical problem, it was possible to develop a pipeline that can be easily scaled to more complex problems. Additionally, the use of a neural network allows for faster computation times than the traditional FEM method. This has the potential to significantly reduce computational costs on any numerical processes that rely on FEM simulations, such as material identification algorithms for tissue disease diagnostics problems and stress CAD for manufacturing. However, as it is shown in the results, predictions for material properties outside the training space, may lead to higher error rates. 
+One advantage of this implementation is its simplicity and scalability. By starting with a relatively simple mechanical problem, we were able to develop a pipeline that can be easily scaled to handle more complex problems. Furthermore, the use of a neural network allows for faster computation times compared to traditional FEM methods. This has the potential to significantly reduce computational costs in numerical processes that rely on FEM simulations, such as material identification algorithms for tissue disease diagnostics and stress CAD for manufacturing. However, it should be noted that predictions for material properties outside the training space may lead to higher error rates, as shown in the results.
 
-In conclusion, the effectiveness of using a neural network to solve simple mechanical problems was demonstrated. By developing a faster surrogate model, it was shown the potential to significantly improve the efficiency of solving such problems, with broader implications for the engineering design process. Future work includes scaling the proposed approach to more complex mechanical problems and evaluating its effectiveness on a larger dataset.
+In conclusion, we have demonstrated the effectiveness of using a neural network to solve simple mechanical problems. By developing a faster surrogate model, we have shown the potential to significantly improve the efficiency of solving such problems, with broader implications for the engineering design process. Future work includes scaling the proposed approach to more complex mechanical problems and evaluating its effectiveness on a larger dataset.
 
 \bibliography{amcapaper}
 \end{document}
