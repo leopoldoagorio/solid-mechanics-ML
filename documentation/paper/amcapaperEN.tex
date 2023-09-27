@@ -46,10 +46,10 @@ In this work, we present the methodology used to develop the NN, the performance
 \section{Methodology}
 In this section, we describe the pipeline we developed to generate the dataset of FEM solutions and train the NN. We used a simple solid mechanical models with the \texttt{ONSAS.m} FEM solver, which we automated with a bash script. The resulting dataset was preprocessed and used to train a multi-layer perceptron (MLP) implemented in PyTorch.
 
-\subsection{Uniaxial Model}
+\subsection{Uniaxial Load Model}
 This model consisted of a uniaxial mechanical problem in which a load was applied to a three-dimensional prism, causing it to deform in three dimensional. The model is uniaxial in the sense that the applied load is along the x-axis. We used the \texttt{ONSAS.m} FEM solver to simulate the deformation and generate a dataset of solutions. We chose for its simplicity and as a starting point for more complex models.
 
-The simulated uniaxial problem can be seen in Figure \ref{fig:uniaxial_model}. Loads are applied to the prism at the right end, causing it to deform. The prism is constrained to maintain the lefmost face (Figure \ref{fig:uniaxial_model}) in the y-z plane, and the origin fixed, thus the deformation is uniaxial.
+The simulated uniaxial problem can be seen in Figure \ref{fig:uniaxial_model}. Loads are applied to the prism at the right end, causing it to deform. The prism is constrained to maintain the lefmost face (Figure \ref{fig:uniaxial_model}) in the y-z plane, and the origin fixed, deforming itself in the three directions due to the uniaxial load.
 
 \begin{figure}[ht]
 	\centering
@@ -66,7 +66,7 @@ The simulated uniaxial problem can be seen in Figure \ref{fig:uniaxial_model}. L
 	\caption{System with an applied load.}
 	%\label{fig:image2}
 	\end{subfigure}
-	\caption{Uniaxial problem simulated and solved in \texttt{ONSAS.m}.}
+	\caption{Uniaxial load problem simulated and solved in \texttt{ONSAS.m}.}
 	\label{fig:uniaxial_model}
 \end{figure}
 
@@ -172,7 +172,7 @@ Figure \ref{fig:train_loss} shows the training, validation, and test losses of o
 %	\item RMSE extrapolation error for (Lx, E, p) = (4.00, 0.50, 3.50): is 0.067281 \item MSE extrapolation error for (Lx, E, p) = (4.00, 0.50, 3.50): is 0.946485 m$^2$ 
 %\end{itemize}
 
-We also evaluated the ability of our model to extrapolate beyond the parameters in the training set. When we measured the RMSE extrapolation error for $(Lx, E, p) = (4.00, 0.50, 3.50)$, we found it to be $6.7\times10^{-2}$, while the MSE extrapolation error was $9.5\times10^{-1}$ $m^2$. Since the variation range for the training parameters was $(Lx, E, p) = (1 \hdots 3, 1 \hdots 4, .1 \hdots 3)$, these results show that our neural network was able to extrapolate to a point that was not in the training set, with an error of 6.7 of the true value.
+We also evaluated the ability of our model to extrapolate beyond the parameters in the training set. When we measured the RMSE extrapolation error for $(Lx, E, p) = (4.00, 0.50, 3.50)$, we found it to be $6.7\times10^{-2}$, while the MSE extrapolation error was $9.5\times10^{-1}$ $m^2$. Since the variation range for the training parameters was $(Lx, E, p) = (1 \hdots 3, 1 \hdots 4, .1 \hdots 3)$, these results show that our neural network was able to extrapolate to a point that was not in the training set, with an error of 6.7 \% of the true value.
 
 \subsection{Evaluation on Cantilever Model}
 For the case of the composed cantilever model, the training, validation and test loss is shown in Figure \ref{fig:composed_cantilever_loss}. As we can see, the training loss decreases rapidly during the first few epochs and then levels off. 
